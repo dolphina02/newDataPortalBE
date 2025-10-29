@@ -10,7 +10,7 @@ echo Host: ep-square-shadow-a174zj2p-pooler.ap-southeast-1.aws.neon.tech
 echo.
 
 echo Running database initialization script...
-psql "postgresql://neondb_owner:npg_xnKiwN18QFSu@ep-square-shadow-a174zj2p-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require" -f init-database.sql
+psql "%DATABASE_CONNECTION_STRING%" -f init-database.sql
 
 echo.
 echo ============================================

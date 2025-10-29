@@ -2,6 +2,16 @@
 
 이 디렉토리는 LINA Data Portal 백엔드 애플리케이션의 데이터베이스 스키마와 초기 데이터를 포함합니다.
 
+## ⚠️ 보안 주의사항
+
+데이터베이스 연결 정보는 환경변수로 관리됩니다. 실제 연결 정보를 코드에 하드코딩하지 마세요.
+
+### 환경변수 설정
+```bash
+# .env 파일에 설정
+DATABASE_CONNECTION_STRING=postgresql://username:password@host:5432/database?sslmode=require
+```
+
 ## 📁 파일 구조
 
 ```
@@ -48,7 +58,7 @@ setup-database.bat
 
 1. **PostgreSQL 클라이언트로 연결**
 ```bash
-psql "postgresql://neondb_owner:npg_xnKiwN18QFSu@ep-square-shadow-a174zj2p-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require"
+psql "$DATABASE_CONNECTION_STRING"
 ```
 
 2. **스키마 생성**
@@ -64,7 +74,7 @@ psql "postgresql://neondb_owner:npg_xnKiwN18QFSu@ep-square-shadow-a174zj2p-poole
 ### 방법 3: 전체 초기화
 
 ```bash
-psql "postgresql://neondb_owner:npg_xnKiwN18QFSu@ep-square-shadow-a174zj2p-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require" -f init-database.sql
+psql "$DATABASE_CONNECTION_STRING" -f init-database.sql
 ```
 
 ## 📊 샘플 데이터
@@ -159,12 +169,12 @@ ORDER BY priority DESC;
 
 ### 백업
 ```bash
-pg_dump "postgresql://neondb_owner:npg_xnKiwN18QFSu@ep-square-shadow-a174zj2p-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require" > backup.sql
+pg_dump "$DATABASE_CONNECTION_STRING" > backup.sql
 ```
 
 ### 복원
 ```bash
-psql "postgresql://neondb_owner:npg_xnKiwN18QFSu@ep-square-shadow-a174zj2p-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require" < backup.sql
+psql "$DATABASE_CONNECTION_STRING" < backup.sql
 ```
 
 ### 스키마 재생성 (주의: 모든 데이터 삭제됨)
