@@ -1,12 +1,12 @@
 package com.lina.dataportal.service;
 
 import com.lina.dataportal.domain.approval.ApprovalStep;
-import com.lina.dataportal.domain.approval.ApprovalLineStatus;
-import com.lina.dataportal.domain.approval.ApprovalLineTemplate;
+import com.lina.dataportal.domain.approval.ApprovalStepStatus;
+import com.lina.dataportal.domain.approval.ApprovalStepTemplate;
 import com.lina.dataportal.domain.approval.ApprovalType;
 import com.lina.dataportal.domain.user.User;
 import com.lina.dataportal.repository.ApprovalStepRepository;
-import com.lina.dataportal.repository.ApprovalLineTemplateRepository;
+import com.lina.dataportal.repository.ApprovalStepTemplateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,7 +22,7 @@ public class ApprovalStepService {
     private ApprovalStepRepository approvalStepRepository;
     
     @Autowired
-    private ApprovalLineTemplateRepository templateRepository;
+    private ApprovalStepTemplateRepository templateRepository;
     
     @Autowired
     private UserService userService;
@@ -32,10 +32,10 @@ public class ApprovalStepService {
      */
     public List<ApprovalStep> createApprovalStepsFromTemplate(Long approvalId, ApprovalType approvalType) {
         // 현재 활성화된 템플릿들 조회
-        List<ApprovalLineTemplate> templates = templateRepository.findByApprovalTypeAndIsActiveTrueOrderByStepOrder(approvalType);
+        List<ApprovalStepTemplate> templates = templateRepository.findByApprovalTypeAndIsActiveTrueOrderByStepOrder(approvalType);
         
         if (templates.isEmpty()) {
-            throw new RuntimeException("No active approval line templates found for type: " + approvalType);
+            throw new RuntimeException("No active approval step templates found for type: " + approvalType);
         }
         
         // 템플릿을 기반으로 승인 단계들 생성 (스냅샷)
@@ -90,7 +90,7 @@ public class ApprovalStepService {
         ApprovalStep step = approvalStepRepository.findById(stepId)
             .orElseThrow(() -> new RuntimeException("Approval step not found with id: " + stepId));
         
-        if (step.getStatus() != ApprovalLineStatus.PENDING) {
+        if (step.getStatus() != ApprovalStepStatus.PENDING) {
             throw new RuntimeException("Cannot approve step that is not pending. Current status: " + step.getStatus());
         }
         
@@ -105,7 +105,7 @@ public class ApprovalStepService {
         ApprovalStep step = approvalStepRepository.findById(stepId)
             .orElseThrow(() -> new RuntimeException("Approval step not found with id: " + stepId));
         
-        if (step.getStatus() != ApprovalLineStatus.PENDING) {
+        if (step.getStatus() != ApprovalStepStatus.PENDING) {
             throw new RuntimeException("Cannot reject step that is not pending. Current status: " + step.getStatus());
         }
         
@@ -120,7 +120,7 @@ public class ApprovalStepService {
         ApprovalStep step = approvalStepRepository.findById(stepId)
             .orElseThrow(() -> new RuntimeException("Approval step not found with id: " + stepId));
         
-        if (step.getStatus() != ApprovalLineStatus.PENDING) {
+        if (step.getStatus() != ApprovalStepStatus.PENDING) {
             throw new RuntimeException("Cannot skip step that is not pending. Current status: " + step.getStatus());
         }
         

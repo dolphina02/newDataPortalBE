@@ -258,7 +258,7 @@ public class Approval extends BaseAuditEntity {
         }
         
         long approvedCount = approvalSteps.stream()
-            .filter(step -> step.getStatus() == ApprovalLineStatus.APPROVED)
+            .filter(step -> step.getStatus() == ApprovalStepStatus.APPROVED)
             .count();
         
         return (int) approvedCount + 1;
@@ -274,7 +274,7 @@ public class Approval extends BaseAuditEntity {
         }
         
         long approvedCount = approvalSteps.stream()
-            .filter(step -> step.getStatus() == ApprovalLineStatus.APPROVED)
+            .filter(step -> step.getStatus() == ApprovalStepStatus.APPROVED)
             .count();
         
         return (double) approvedCount / total * 100.0;
@@ -290,7 +290,7 @@ public class Approval extends BaseAuditEntity {
         
         return approvalSteps.stream()
             .filter(ApprovalStep::getIsRequired)
-            .allMatch(step -> step.getStatus() == ApprovalLineStatus.APPROVED);
+            .allMatch(step -> step.getStatus() == ApprovalStepStatus.APPROVED);
     }
     
     /**
@@ -302,7 +302,7 @@ public class Approval extends BaseAuditEntity {
         }
         
         return approvalSteps.stream()
-            .filter(step -> step.getStatus() == ApprovalLineStatus.PENDING)
+            .filter(step -> step.getStatus() == ApprovalStepStatus.PENDING)
             .min((s1, s2) -> Integer.compare(s1.getStepOrder(), s2.getStepOrder()))
             .orElse(null);
     }
@@ -316,7 +316,7 @@ public class Approval extends BaseAuditEntity {
         }
         
         return approvalSteps.stream()
-            .anyMatch(step -> step.getStatus() == ApprovalLineStatus.REJECTED);
+            .anyMatch(step -> step.getStatus() == ApprovalStepStatus.REJECTED);
     }
     
     // ========== 승인 대상 오브젝트 관련 비즈니스 메서드 ==========

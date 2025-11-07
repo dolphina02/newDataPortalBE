@@ -1,10 +1,10 @@
 package com.lina.dataportal.domain.approval;
 
 /**
- * 승인 라인/단계 상태
+ * 승인 단계 상태
  * DB에는 EnumType.STRING으로 저장되며, UI 라벨은 프론트엔드에서 매핑
  */
-public enum ApprovalLineStatus {
+public enum ApprovalStepStatus {
     /**
      * 승인 대기 중
      */

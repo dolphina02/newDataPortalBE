@@ -27,9 +27,10 @@
   - User 엔티티와 ManyToOne 관계 설정
   - 템플릿 기반 생성 메서드 업데이트
 
-#### ✅ ApprovalLineTemplate 엔티티 (업데이트)
-- **파일**: `src/main/java/com/lina/dataportal/domain/approval/ApprovalLineTemplate.java`
+#### ✅ ApprovalStepTemplate 엔티티 (업데이트)
+- **파일**: `src/main/java/com/lina/dataportal/domain/approval/ApprovalStepTemplate.java`
 - **변경사항**:
+  - ApprovalLineTemplate → ApprovalStepTemplate로 이름 변경
   - `approverId` (String) → `approverId` (Long) + 보조 정보 필드들
   - User 엔티티와 ManyToOne 관계 설정 (선택적)
 
@@ -47,7 +48,7 @@
 - **변경사항**:
   - User 기반 메서드들 추가
   - 하위 호환성을 위한 이메일 기반 메서드들 Deprecated 처리
-  - ApprovalLine → ApprovalStep 기반으로 변경
+  - ApprovalStep 기반으로 통합 완료
 
 #### ✅ ApprovalStepService (업데이트)
 - **파일**: `src/main/java/com/lina/dataportal/service/ApprovalStepService.java`
@@ -62,7 +63,7 @@
 - **변경사항**:
   - User ID와 이메일 모두 지원하는 API 엔드포인트
   - 요청에서 User 객체 추출하는 헬퍼 메서드들 추가
-  - ApprovalLine → ApprovalStep 반환 타입 변경
+  - ApprovalStep 반환 타입으로 통합 완료
 
 ### 4. 리포지토리 변경
 

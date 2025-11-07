@@ -1,7 +1,7 @@
 package com.lina.dataportal.repository;
 
 import com.lina.dataportal.domain.approval.ApprovalStep;
-import com.lina.dataportal.domain.approval.ApprovalLineStatus;
+import com.lina.dataportal.domain.approval.ApprovalStepStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -21,7 +21,7 @@ public interface ApprovalStepRepository extends JpaRepository<ApprovalStep, Long
     /**
      * 특정 승인자의 특정 상태 승인 단계들 조회 - User ID 기반
      */
-    List<ApprovalStep> findByApproverIdAndStatus(Long approverId, ApprovalLineStatus status);
+    List<ApprovalStep> findByApproverIdAndStatus(Long approverId, ApprovalStepStatus status);
     
     /**
      * 특정 승인자의 미결 승인 단계들을 생성일시 순으로 조회 - User ID 기반
@@ -32,7 +32,7 @@ public interface ApprovalStepRepository extends JpaRepository<ApprovalStep, Long
     // 하위 호환성을 위한 이메일 기반 메서드들 (Deprecated)
     @Deprecated
     @Query("SELECT as FROM ApprovalStep as WHERE as.approverEmail = :approverEmail AND as.status = :status")
-    List<ApprovalStep> findByApproverEmailAndStatus(@Param("approverEmail") String approverEmail, @Param("status") ApprovalLineStatus status);
+    List<ApprovalStep> findByApproverEmailAndStatus(@Param("approverEmail") String approverEmail, @Param("status") ApprovalStepStatus status);
     
     @Deprecated
     @Query("SELECT as FROM ApprovalStep as WHERE as.approverEmail = :approverEmail AND as.status = 'PENDING' ORDER BY as.createdAt ASC")

@@ -82,7 +82,7 @@ public class ApprovalStep {
     private String approverName;        // 승인자 이름
     private String approverRole;        // 승인자 역할
     private String approverDepartment;  // 승인자 부서
-    private ApprovalLineStatus status;  // PENDING, APPROVED, REJECTED, SKIPPED
+    private ApprovalStepStatus status;  // PENDING, APPROVED, REJECTED, SKIPPED
     private Boolean isRequired = true;  // 필수 단계 여부
     private Boolean isParallel = false; // 병렬 처리 여부
     private LocalDateTime approvedAt;

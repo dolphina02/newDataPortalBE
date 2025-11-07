@@ -30,7 +30,8 @@ public class EnumController {
         Map<String, Object> enums = new HashMap<>();
         enums.put("approvalTypes", getApprovalTypes());
         enums.put("approvalStatuses", getApprovalStatuses());
-        enums.put("approvalLineStatuses", getApprovalLineStatuses());
+        enums.put("approvalStepStatuses", getApprovalStepStatuses());
+        enums.put("approvalLineStatuses", getApprovalLineStatuses()); // 하위 호환성
         enums.put("priorities", getPriorities());
         enums.put("targetTypes", getTargetTypes());
         enums.put("accessScopes", getAccessScopes());
@@ -64,14 +65,24 @@ public class EnumController {
     }
     
     /**
-     * 승인 라인 상태 목록 조회
+     * 승인 단계 상태 목록 조회
      */
-    @GetMapping("/approval-line-statuses")
-    public ResponseEntity<List<String>> getApprovalLineStatuses() {
-        List<String> statuses = Arrays.stream(ApprovalLineStatus.values())
+    @GetMapping("/approval-step-statuses")
+    public ResponseEntity<List<String>> getApprovalStepStatuses() {
+        List<String> statuses = Arrays.stream(ApprovalStepStatus.values())
             .map(Enum::name)
             .collect(Collectors.toList());
         return ResponseEntity.ok(statuses);
+    }
+    
+    /**
+     * 승인 라인 상태 목록 조회 (하위 호환성)
+     * @deprecated Use getApprovalStepStatuses() instead
+     */
+    @Deprecated
+    @GetMapping("/approval-line-statuses")
+    public ResponseEntity<List<String>> getApprovalLineStatuses() {
+        return getApprovalStepStatuses();
     }
     
     /**

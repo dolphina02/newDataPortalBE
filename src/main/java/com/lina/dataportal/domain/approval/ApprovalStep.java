@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 
 /**
  * 실제 승인 진행을 위한 승인 단계 (템플릿의 스냅샷)
- * 승인 요청 생성 시 ApprovalLineTemplate을 기반으로 생성되며,
+ * 승인 요청 생성 시 ApprovalStepTemplate을 기반으로 생성되며,
  * 이후 템플릿이 변경되어도 기존 진행 건에는 영향을 주지 않습니다.
  */
 @Entity
@@ -30,7 +30,7 @@ public class ApprovalStep extends BaseAuditEntity {
     
     @NotNull
     @Column(name = "template_id", nullable = false)
-    private Long templateId; // 예: 1 (기반이 된 ApprovalLineTemplate의 ID)
+    private Long templateId; // 예: 1 (기반이 된 ApprovalStepTemplate의 ID)
     
     @NotNull
     @Column(name = "template_version", nullable = false)
@@ -72,7 +72,7 @@ public class ApprovalStep extends BaseAuditEntity {
     @Enumerated(EnumType.STRING)
     @NotNull
     @Column(nullable = false)
-    private ApprovalLineStatus status = ApprovalLineStatus.PENDING; // 예: PENDING, APPROVED, REJECTED, SKIPPED
+    private ApprovalStepStatus status = ApprovalStepStatus.PENDING; // 예: PENDING, APPROVED, REJECTED, SKIPPED
     
     @Column(name = "approved_at")
     private LocalDateTime approvedAt; // 예: 2024-01-16T10:30:00
@@ -112,7 +112,7 @@ public class ApprovalStep extends BaseAuditEntity {
     /**
      * 템플릿으로부터 승인 단계 생성 (스냅샷)
      */
-    public static ApprovalStep fromTemplate(Long approvalId, ApprovalLineTemplate template) {
+    public static ApprovalStep fromTemplate(Long approvalId, ApprovalStepTemplate template) {
         ApprovalStep step = new ApprovalStep();
         step.approvalId = approvalId;
         step.templateId = template.getId();
@@ -129,7 +129,7 @@ public class ApprovalStep extends BaseAuditEntity {
     /**
      * 템플릿으로부터 승인 단계 생성 (실제 승인자 지정 - User 객체)
      */
-    public static ApprovalStep fromTemplate(Long approvalId, ApprovalLineTemplate template, User actualApprover) {
+    public static ApprovalStep fromTemplate(Long approvalId, ApprovalStepTemplate template, User actualApprover) {
         ApprovalStep step = fromTemplate(approvalId, template);
         step.approverId = actualApprover.getId();
         step.approverEmail = actualApprover.getEmail();
@@ -140,7 +140,7 @@ public class ApprovalStep extends BaseAuditEntity {
     /**
      * 템플릿으로부터 승인 단계 생성 (실제 승인자 지정 - 개별 필드)
      */
-    public static ApprovalStep fromTemplate(Long approvalId, ApprovalLineTemplate template, 
+    public static ApprovalStep fromTemplate(Long approvalId, ApprovalStepTemplate template, 
                                           Long actualApproverId, String actualApproverEmail, String actualApproverName) {
         ApprovalStep step = fromTemplate(approvalId, template);
         step.approverId = actualApproverId;
@@ -151,29 +151,29 @@ public class ApprovalStep extends BaseAuditEntity {
     
     // Business Methods
     public void approve(String comment) {
-        this.status = ApprovalLineStatus.APPROVED;
+        this.status = ApprovalStepStatus.APPROVED;
         this.approvedAt = LocalDateTime.now();
         this.approvalComment = comment;
     }
     
     public void reject(String comment) {
-        this.status = ApprovalLineStatus.REJECTED;
+        this.status = ApprovalStepStatus.REJECTED;
         this.approvedAt = LocalDateTime.now();
         this.approvalComment = comment;
     }
     
     public void skip(String comment) {
-        this.status = ApprovalLineStatus.SKIPPED;
+        this.status = ApprovalStepStatus.SKIPPED;
         this.approvedAt = LocalDateTime.now();
         this.approvalComment = comment;
     }
     
     public boolean isPending() {
-        return this.status == ApprovalLineStatus.PENDING;
+        return this.status == ApprovalStepStatus.PENDING;
     }
     
     public boolean isProcessed() {
-        return this.status != ApprovalLineStatus.PENDING;
+        return this.status != ApprovalStepStatus.PENDING;
     }
     
     // Getters and Setters
@@ -219,8 +219,8 @@ public class ApprovalStep extends BaseAuditEntity {
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
     
-    public ApprovalLineStatus getStatus() { return status; }
-    public void setStatus(ApprovalLineStatus status) { this.status = status; }
+    public ApprovalStepStatus getStatus() { return status; }
+    public void setStatus(ApprovalStepStatus status) { this.status = status; }
     
     public LocalDateTime getApprovedAt() { return approvedAt; }
     public void setApprovedAt(LocalDateTime approvedAt) { this.approvedAt = approvedAt; }

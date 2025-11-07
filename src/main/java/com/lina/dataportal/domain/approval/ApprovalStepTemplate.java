@@ -5,76 +5,74 @@ import com.lina.dataportal.domain.user.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "approval_line_templates")
-public class ApprovalLineTemplate extends BaseAuditEntity {
+@Table(name = "approval_step_templates")
+public class ApprovalStepTemplate extends BaseAuditEntity {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id; // 예: 1
+    private Long id;
     
     @Enumerated(EnumType.STRING)
     @NotNull
     @Column(nullable = false)
-    private ApprovalType approvalType; // 예: DATA_ACCESS, REPORT_PUBLISH, DASHBOARD_CREATE
+    private ApprovalType approvalType;
     
     @NotNull
     @Column(name = "step_order", nullable = false)
-    private Integer stepOrder; // 예: 1 (승인 단계 순서)
+    private Integer stepOrder;
     
     @NotBlank
     @Column(name = "approver_role", nullable = false)
-    private String approverRole; // 예: "팀장", "부장", "이사"
+    private String approverRole;
     
     @Column(name = "approver_department")
-    private String approverDepartment; // 예: "데이터분석팀", "IT팀", "경영지원팀"
+    private String approverDepartment;
     
-    // 승인자 정보 (정규화) - 선택적 (역할/부서만으로도 템플릿 생성 가능)
     @Column(name = "approver_id")
-    private Long approverId; // 예: 2 (User 테이블의 ID, 특정 담당자 지정 시)
+    private Long approverId;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "approver_id", insertable = false, updatable = false)
-    private User approverUser; // 연관된 승인자 정보
+    private User approverUser;
     
     @Column(name = "approver_email")
-    private String approverEmail; // 예: "kim.leader@company.com" (보조 정보)
+    private String approverEmail;
     
     @Column(name = "approver_name")
-    private String approverName; // 예: "김팀장" (보조 정보)
+    private String approverName;
     
     @Column(name = "is_required", nullable = false)
-    private Boolean isRequired = true; // 예: true (필수 승인 단계 여부)
+    private Boolean isRequired = true;
     
     @Column(name = "is_active", nullable = false)
-    private Boolean isActive = true; // 예: true (템플릿 활성 상태)
+    private Boolean isActive = true;
     
     @Column(name = "description")
-    private String description; // 예: "데이터 접근 권한에 대한 팀장 승인"
+    private String description;
     
     @Version
     @Column(name = "version", nullable = false)
-    private Long version = 0L; // 예: 0, 1, 2... (템플릿 수정 시마다 증가)
+    private Long version = 0L;
     
     // Constructors
-    public ApprovalLineTemplate() {}
+    public ApprovalStepTemplate() {}
     
-    public ApprovalLineTemplate(ApprovalType approvalType, Integer stepOrder, String approverRole) {
+    public ApprovalStepTemplate(ApprovalType approvalType, Integer stepOrder, String approverRole) {
         this.approvalType = approvalType;
         this.stepOrder = stepOrder;
         this.approverRole = approverRole;
     }
     
-    public ApprovalLineTemplate(ApprovalType approvalType, Integer stepOrder, String approverRole, String approverDepartment) {
+    public ApprovalStepTemplate(ApprovalType approvalType, Integer stepOrder, String approverRole, String approverDepartment) {
         this.approvalType = approvalType;
         this.stepOrder = stepOrder;
         this.approverRole = approverRole;
         this.approverDepartment = approverDepartment;
     }
     
-    public ApprovalLineTemplate(ApprovalType approvalType, Integer stepOrder, String approverRole, String approverDepartment, Long approverId, String approverEmail, String approverName) {
+    public ApprovalStepTemplate(ApprovalType approvalType, Integer stepOrder, String approverRole, String approverDepartment, Long approverId, String approverEmail, String approverName) {
         this.approvalType = approvalType;
         this.stepOrder = stepOrder;
         this.approverRole = approverRole;
@@ -84,8 +82,7 @@ public class ApprovalLineTemplate extends BaseAuditEntity {
         this.approverName = approverName;
     }
     
-    // 편의 생성자 (User 객체 사용)
-    public ApprovalLineTemplate(ApprovalType approvalType, Integer stepOrder, String approverRole, String approverDepartment, User approver) {
+    public ApprovalStepTemplate(ApprovalType approvalType, Integer stepOrder, String approverRole, String approverDepartment, User approver) {
         this.approvalType = approvalType;
         this.stepOrder = stepOrder;
         this.approverRole = approverRole;
