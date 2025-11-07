@@ -9,40 +9,40 @@ public class UserToken {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long id; // 예: 1
     
     @Column(name = "user_id", nullable = false)
-    private String userId;
+    private String userId; // 예: "john.doe@company.com"
     
     @Column(name = "token_type", nullable = false)
-    private String tokenType; // "DATABRICKS_PAT"
+    private String tokenType; // 예: "DATABRICKS_PAT", "ELASTICSEARCH_API_KEY"
     
     @Column(name = "encrypted_token", nullable = false, length = 1000)
-    private String encryptedToken;
+    private String encryptedToken; // 예: "AES256암호화된토큰문자열..."
     
     @Column(name = "workspace_url")
-    private String workspaceUrl;
+    private String workspaceUrl; // 예: "https://adb-123456789.12.azuredatabricks.net"
     
     @Column(name = "cluster_id")
-    private String clusterId;
+    private String clusterId; // 예: "0123-456789-abc123"
     
     @Column(name = "warehouse_id")
-    private String warehouseId;
+    private String warehouseId; // 예: "abc123def456"
     
     @Column(name = "is_active", nullable = false)
-    private Boolean isActive = true;
+    private Boolean isActive = true; // 예: true (토큰 활성 상태)
     
     @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
+    private LocalDateTime createdAt; // 예: 2024-01-15T10:00:00
     
     @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    private LocalDateTime updatedAt; // 예: 2024-01-20T14:30:00
     
     @Column(name = "last_used_at")
-    private LocalDateTime lastUsedAt;
+    private LocalDateTime lastUsedAt; // 예: 2024-01-25T16:45:00
     
     @Column(name = "expires_at")
-    private LocalDateTime expiresAt;
+    private LocalDateTime expiresAt; // 예: 2024-12-31T23:59:59
     
     // Constructors
     public UserToken() {

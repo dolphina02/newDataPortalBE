@@ -11,34 +11,34 @@ public class DashboardSubscription {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long id; // 예: 1
     
     @NotBlank
     @Column(nullable = false)
-    private String userId;
+    private String userId; // 예: "user.kim@company.com"
     
     @NotNull
     @Column(name = "dashboard_id", nullable = false)
-    private Long dashboardId;
+    private Long dashboardId; // 예: 1 (구독한 Dashboard의 ID)
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "dashboard_id", insertable = false, updatable = false)
-    private Dashboard dashboard;
+    private Dashboard dashboard; // 구독한 대시보드
     
     @Column(name = "display_order")
-    private Integer displayOrder = 0;
+    private Integer displayOrder = 0; // 예: 1 (마이 대시보드에서의 표시 순서)
     
     @Column(name = "is_favorite")
-    private Boolean isFavorite = false;
+    private Boolean isFavorite = false; // 예: true (즐겨찾기 여부)
     
     @Column(name = "custom_title")
-    private String customTitle;
+    private String customTitle; // 예: "내 매출 분석" (사용자 지정 제목)
     
     @Column(name = "subscribed_at", nullable = false, updatable = false)
-    private LocalDateTime subscribedAt;
+    private LocalDateTime subscribedAt; // 예: 2024-01-15T10:00:00
     
     @Column(name = "last_accessed")
-    private LocalDateTime lastAccessed;
+    private LocalDateTime lastAccessed; // 예: 2024-01-25T14:30:00
     
     @PrePersist
     protected void onCreate() {

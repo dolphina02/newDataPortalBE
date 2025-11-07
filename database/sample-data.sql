@@ -1,11 +1,30 @@
--- LINA Data Portal Sample Data
+-- LINA Data Portal Sample Data (Updated with User References)
 -- PostgreSQL Sample Data Insertion
+
+-- ============================================
+-- 1. USERS SAMPLE DATA (NEW)
+-- ============================================
+INSERT INTO users (entra_object_id, email, name, display_name, employee_id, department, job_title, manager_email, phone_number, office_location, status, is_admin) VALUES
+('12345678-1234-1234-1234-123456789abc', 'admin@company.com', '관리자', '시스템 관리자', 'EMP001', 'IT팀', '시스템 관리자', null, '02-1234-5678', '서울 본사 15층', 'ACTIVE', true),
+('23456789-2345-2345-2345-234567890bcd', 'kim.analyst@company.com', '김분석가', '김분석가 (데이터팀)', 'EMP002', '데이터분석팀', '선임 데이터 분석가', 'park.manager@company.com', '02-1234-5679', '서울 본사 12층', 'ACTIVE', false),
+('34567890-3456-3456-3456-345678901cde', 'park.manager@company.com', '박매니저', '박매니저 (데이터팀장)', 'EMP003', '데이터분석팀', '팀장', 'choi.director@company.com', '02-1234-5680', '서울 본사 12층', 'ACTIVE', false),
+('45678901-4567-4567-4567-456789012def', 'lee.security@company.com', '이보안', '이보안 (보안팀)', 'EMP004', '보안팀', '보안 담당자', 'jung.ciso@company.com', '02-1234-5681', '서울 본사 14층', 'ACTIVE', false),
+('56789012-5678-5678-5678-567890123ef0', 'jung.ciso@company.com', '정보안', '정보안 (CISO)', 'EMP005', '보안팀', '정보보호책임자', null, '02-1234-5682', '서울 본사 14층', 'ACTIVE', true),
+('67890123-6789-6789-6789-678901234f01', 'choi.director@company.com', '최이사', '최이사 (데이터본부)', 'EMP006', '데이터본부', '이사', null, '02-1234-5683', '서울 본사 16층', 'ACTIVE', true),
+('78901234-7890-7890-7890-789012345012', 'user1@company.com', '사용자1', '사용자1 (영업팀)', 'EMP007', '영업팀', '영업 담당자', 'kim.sales@company.com', '02-1234-5684', '서울 본사 10층', 'ACTIVE', false),
+('89012345-8901-8901-8901-890123456123', 'user2@company.com', '사용자2', '사용자2 (마케팅팀)', 'EMP008', '마케팅팀', '마케팅 전문가', 'lee.marketing@company.com', '02-1234-5685', '서울 본사 11층', 'ACTIVE', false),
+('90123456-9012-9012-9012-901234567234', 'user3@company.com', '사용자3', '사용자3 (재무팀)', 'EMP009', '재무팀', '재무 분석가', 'park.finance@company.com', '02-1234-5686', '서울 본사 13층', 'ACTIVE', false),
+('01234567-0123-0123-0123-012345678345', 'user4@company.com', '사용자4', '사용자4 (인사팀)', 'EMP010', '인사팀', 'HR 전문가', 'choi.hr@company.com', '02-1234-5687', '서울 본사 9층', 'ACTIVE', false),
+('11234567-1123-1123-1123-112345678456', 'user5@company.com', '사용자5', '사용자5 (운영팀)', 'EMP011', '운영팀', '운영 담당자', 'kim.ops@company.com', '02-1234-5688', '서울 본사 8층', 'ACTIVE', false);
 
 -- ============================================
 -- 1. DASHBOARDS SAMPLE DATA
 -- ============================================
-INSERT INTO dashboards (title, description, category, type, rating, downloads, image, config, dashboard_url, contains_sensitive_data, created_by, is_active) VALUES
-('매출 분석 대시보드', '실시간 매출 현황과 트렌드를 한눈에 확인할 수 있는 종합 대시보드', 'sales', 'TEMPLATE', 4.8, 2100, '/sampleDashboard.png', '{"charts": ["sales_trend", "product_performance"]}', '/dashboards/sales-analysis', false, 'admin', true),
+-- ============================================
+-- 2. DASHBOARDS SAMPLE DATA (Updated with User references)
+-- ============================================
+INSERT INTO dashboards (title, description, category, type, rating, downloads, image, config, dashboard_url, contains_sensitive_data, created_by_id, created_by_email, created_by_name, is_active) VALUES
+('매출 분석 대시보드', '실시간 매출 현황과 트렌드를 한눈에 확인할 수 있는 종합 대시보드', 'sales', 'TEMPLATE', 4.8, 2100, '/sampleDashboard.png', '{"charts": ["sales_trend", "product_performance"]}', '/dashboards/sales-analysis', false, 1, 'admin@company.com', '관리자', true),
 ('고객 행동 분석', '고객 여정과 행동 패턴을 시각화하여 인사이트를 제공하는 대시보드', 'customer', 'TEMPLATE', 4.6, 1800, '/sampleDashboard.png', '{"charts": ["customer_journey", "behavior_analysis"]}', '/dashboards/customer-behavior', true, 'admin', true),
 ('운영 효율성 모니터', '시스템 성능과 운영 지표를 실시간으로 모니터링하는 대시보드', 'operations', 'TEMPLATE', 4.9, 1500, '/sampleDashboard.png', '{"charts": ["system_performance", "operational_kpis"]}', '/dashboards/operations-monitor', false, 'admin', true),
 ('Claim Summary', '보험 청구 현황과 처리 상태를 종합적으로 관리하는 대시보드', 'insurance', 'TEMPLATE', 4.7, 1300, '/sampleDashboard2.png', '{"charts": ["claim_status", "processing_time"]}', '/dashboards/claim-summary', true, 'admin', true),
@@ -145,3 +164,66 @@ INSERT INTO model_tags (model_id, tag) VALUES
 (3, 'churn'), (3, 'prediction'), (3, 'customer'), (3, 'retention'),
 (4, 'claim'), (4, 'amount'), (4, 'prediction'), (4, 'pricing'),
 (5, 'segmentation'), (5, 'customer'), (5, 'clustering'), (5, 'marketing');
+
+-- ============================================
+-- 6. APPROVALS SAMPLE DATA
+-- ============================================
+INSERT INTO approvals (
+    type, title, description, status, priority,
+    requester_id, requester_email, requester_name,
+    reviewer_id, reviewer_email, reviewer_name,
+    target_type, target_id, target_name,
+    access_scope, sensitivity_level,
+    requires_masking, requires_audit_log, usage_duration_days,
+    business_justification, data_usage_purpose,
+    request_date, review_date, review_comment
+) VALUES
+-- 일반 대시보드 배포 승인 (3개월)
+('DASHBOARD_DEPLOY', '마케팅 대시보드 배포 승인', '고객 세그먼트 분석 대시보드를 프로덕션 환경에 배포하기 위한 승인 요청', 'APPROVED', 'MEDIUM',
+ 1, 'kim.analyst@company.com', '김분석가',
+ 2, 'park.manager@company.com', '박매니저',
+ 'DASHBOARD', 'dashboard_001', '고객 세그먼트 분석 대시보드',
+ 'DEPLOY', 'NORMAL',
+ false, true, 90,
+ '마케팅 캠페인 효과 분석 및 고객 타겟팅 개선을 위해 필요', '고객 행동 패턴 분석 및 세그먼트별 마케팅 전략 수립',
+ '2024-01-15 09:30:00', '2024-01-16 14:20:00', '승인합니다. 3개월간 유효합니다.'),
+
+-- 개인정보 데이터 접근 (1개월)
+('DATA_ACCESS', '개인정보 데이터 접근 권한', '고객 개인정보가 포함된 데이터셋에 대한 분석 권한 요청', 'APPROVED', 'HIGH',
+ 3, 'lee.researcher@company.com', '이연구원',
+ 4, 'choi.security@company.com', '최보안담당자',
+ 'DATASET', 'pii_dataset_001', '고객 개인정보 데이터셋',
+ 'MASKED_READ', 'PII',
+ true, true, 30,
+ '개인정보보호법 준수 하에 고객 만족도 조사 분석', '개인정보는 마스킹 처리하여 통계 분석 목적으로만 사용',
+ '2024-01-10 11:00:00', '2024-01-12 16:30:00', '마스킹 처리 조건으로 승인. 1개월간 유효.'),
+
+-- 금융 데이터 접근 (1주일)
+('DATA_ACCESS', '금융 데이터 긴급 분석', '분기 실적 분석을 위한 금융 데이터 긴급 접근 요청', 'APPROVED', 'URGENT',
+ 5, 'jung.finance@company.com', '정재무팀장',
+ 6, 'kim.cfo@company.com', '김CFO',
+ 'DATASET', 'financial_dataset_001', '분기별 재무 데이터',
+ 'READ', 'CONFIDENTIAL',
+ true, true, 7,
+ '분기 실적 보고서 작성 및 이사회 보고 자료 준비', '분기 매출, 비용, 수익성 분석 및 전년 동기 대비 성과 평가',
+ '2024-01-18 08:00:00', '2024-01-18 10:15:00', '긴급 승인. 1주일간 제한적 접근 허용.'),
+
+-- 재무 대시보드 생성 (3개월)
+('DASHBOARD_CREATE', '재무 성과 대시보드 생성', '경영진 대상 실시간 재무 성과 모니터링 대시보드 생성', 'PENDING', 'HIGH',
+ 7, 'han.bi@company.com', '한BI개발자',
+ null, null, null,
+ 'DASHBOARD', 'dashboard_002', '재무 성과 모니터링 대시보드',
+ 'CREATE', 'CONFIDENTIAL',
+ false, true, 90,
+ '경영진 의사결정 지원을 위한 실시간 재무 지표 모니터링', '매출, 비용, 수익성, 현금흐름 등 핵심 재무 지표 시각화',
+ '2024-01-20 14:00:00', null, null),
+
+-- ML 모델 배포 (1개월)
+('DATA_ACCESS', 'ML 모델 배포 권한', '고객 이탈 예측 모델을 프로덕션 환경에 배포하기 위한 권한', 'APPROVED', 'MEDIUM',
+ 8, 'ai.engineer@company.com', 'AI엔지니어',
+ 9, 'tech.lead@company.com', '기술리드',
+ 'MODEL', 'ml_model_001', '고객 이탈 예측 모델',
+ 'DEPLOY', 'SENSITIVE',
+ true, true, 30,
+ '고객 이탈 방지 및 리텐션 전략 수립을 위한 예측 모델 운영', '고객 행동 데이터 기반 이탈 확률 예측 및 마케팅 액션 트리거',
+ '2024-01-17 10:30:00', '2024-01-19 09:45:00', '모델 성능 검증 완료. 1개월간 시범 운영 승인.');

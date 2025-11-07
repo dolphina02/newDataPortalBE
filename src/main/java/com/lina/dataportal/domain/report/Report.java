@@ -12,49 +12,49 @@ public class Report {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long id; // 예: 1
     
     @NotBlank
     @Column(nullable = false)
-    private String title;
+    private String title; // 예: "2024년 1분기 매출 보고서"
     
     @Column(columnDefinition = "TEXT")
-    private String description;
+    private String description; // 예: "2024년 1분기 매출 현황과 분석 결과를 담은 보고서입니다."
     
     @NotBlank
     @Column(nullable = false)
-    private String category;
+    private String category; // 예: "Sales", "Finance", "Marketing"
     
     @Enumerated(EnumType.STRING)
     @NotNull
     @Column(nullable = false)
-    private ReportType type;
+    private ReportType type; // 예: PDF, EXCEL, POWERPOINT
     
     @NotBlank
     @Column(nullable = false)
-    private String filePath;
+    private String filePath; // 예: "/reports/2024/q1-sales-report.pdf"
     
-    private String fileName;
+    private String fileName; // 예: "q1-sales-report.pdf"
     
-    private Long fileSize;
+    private Long fileSize; // 예: 2048576 (2MB in bytes)
     
     @Column(name = "tags")
-    private String tags; // 쉼표로 구분된 태그 문자열
+    private String tags; // 예: "quarterly,sales,revenue,2024" (쉼표로 구분된 태그 문자열)
     
     @Column(name = "contains_sensitive_data", nullable = false)
-    private Boolean containsSensitiveData = false;
+    private Boolean containsSensitiveData = false; // 예: true (민감한 데이터 포함 여부)
     
     @Column(name = "created_by", nullable = false)
-    private String createdBy;
+    private String createdBy; // 예: "choi.manager@company.com"
     
     @Column(name = "is_active", nullable = false)
-    private Boolean isActive = true;
+    private Boolean isActive = true; // 예: true (활성 상태)
     
     @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    private LocalDateTime createdAt; // 예: 2024-04-01T09:00:00
     
     @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    private LocalDateTime updatedAt; // 예: 2024-04-02T11:30:00
     
     @PrePersist
     protected void onCreate() {

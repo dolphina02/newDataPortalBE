@@ -7,39 +7,39 @@ import java.util.List;
 public class STTCall {
     
     @JsonProperty("call_id")
-    private String callId;
+    private String callId; // 예: "CALL_20240115_001"
     
     @JsonProperty("media_url")
-    private String mediaUrl;
+    private String mediaUrl; // 예: "https://storage.company.com/audio/call_001.wav"
     
     @JsonProperty("call_time")
-    private LocalDateTime callTime;
+    private LocalDateTime callTime; // 예: 2024-01-15T14:30:00
     
     @JsonProperty("duration_ms")
-    private Integer durationMs;
+    private Integer durationMs; // 예: 480000 (8분, 밀리초 단위)
     
     @JsonProperty("customer_id")
-    private String customerId;
+    private String customerId; // 예: "CUST_12345"
     
     @JsonProperty("agent_id")
-    private String agentId;
+    private String agentId; // 예: "AGENT_789"
     
     @JsonProperty("campaign_type")
-    private String campaignType;
+    private String campaignType; // 예: "INBOUND", "OUTBOUND", "SUPPORT"
     
-    private String summary;
+    private String summary; // 예: "고객이 제품 불량에 대해 문의하여 교환 처리함"
     
     @JsonProperty("full_text")
-    private String fullText;
+    private String fullText; // 예: "안녕하세요. 고객센터입니다. 무엇을 도와드릴까요? 제품에 문제가 있어서..."
     
-    private List<Turn> turns;
+    private List<Turn> turns; // 화자별 발화 턴 목록
     
-    private List<Segment> segments;
+    private List<Segment> segments; // 세분화된 음성 세그먼트 목록
     
     @JsonProperty("full_text_vec")
-    private List<Double> fullTextVec;
+    private List<Double> fullTextVec; // 예: [0.1, -0.3, 0.7, ...] (텍스트 벡터 임베딩)
     
-    private Customer cust;
+    private Customer cust; // 고객 정보
     
     // Constructors
     public STTCall() {}
@@ -93,16 +93,16 @@ public class STTCall {
     
     // Nested Classes
     public static class Turn {
-        private Integer idx;
-        private String speaker;
+        private Integer idx; // 예: 0 (턴 인덱스)
+        private String speaker; // 예: "agent", "customer"
         
         @JsonProperty("ts_start_ms")
-        private Integer tsStartMs;
+        private Integer tsStartMs; // 예: 0 (시작 시간, 밀리초)
         
         @JsonProperty("ts_end_ms")
-        private Integer tsEndMs;
+        private Integer tsEndMs; // 예: 15000 (종료 시간, 밀리초)
         
-        private String text;
+        private String text; // 예: "안녕하세요. 고객센터입니다. 무엇을 도와드릴까요?"
         
         // Constructors
         public Turn() {}
@@ -134,19 +134,19 @@ public class STTCall {
     
     public static class Segment {
         @JsonProperty("turn_idx")
-        private Integer turnIdx;
+        private Integer turnIdx; // 예: 0 (턴 인덱스)
         
         @JsonProperty("sent_idx")
-        private Integer sentIdx;
+        private Integer sentIdx; // 예: 0 (문장 인덱스)
         
         @JsonProperty("ts_start_ms")
-        private Integer tsStartMs;
+        private Integer tsStartMs; // 예: 0 (시작 시간, 밀리초)
         
         @JsonProperty("ts_end_ms")
-        private Integer tsEndMs;
+        private Integer tsEndMs; // 예: 5000 (종료 시간, 밀리초)
         
-        private String speaker;
-        private String text;
+        private String speaker; // 예: "agent", "customer"
+        private String text; // 예: "안녕하세요."
         
         // Constructors
         public Segment() {}
@@ -182,10 +182,10 @@ public class STTCall {
     
     public static class Customer {
         @JsonProperty("age_band")
-        private String ageBand;
+        private String ageBand; // 예: "30-39", "40-49", "50-59"
         
-        private String gender;
-        private String region;
+        private String gender; // 예: "M", "F"
+        private String region; // 예: "서울", "부산", "대구"
         
         // Constructors
         public Customer() {}

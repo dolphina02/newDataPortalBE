@@ -34,13 +34,13 @@ public class ApprovalLineService {
     }
     
     public ApprovalLine createApprovalLine(Long approvalId, Integer stepOrder, String approverId, String approverName) {
-        ApprovalLine approvalLine = new ApprovalLine(approvalId, stepOrder, approverId, approverName);
+        ApprovalLine approvalLine = new ApprovalLine(approvalId, 1L, stepOrder, approverId, approverName);
         return approvalLineRepository.save(approvalLine);
     }
     
     public ApprovalLine createApprovalLine(Long approvalId, Integer stepOrder, String approverId, String approverName, 
                                          String approverRole, String approverDepartment) {
-        ApprovalLine approvalLine = new ApprovalLine(approvalId, stepOrder, approverId, approverName);
+        ApprovalLine approvalLine = new ApprovalLine(approvalId, 1L, stepOrder, approverId, approverName);
         approvalLine.setApproverRole(approverRole);
         approvalLine.setApproverDepartment(approverDepartment);
         return approvalLineRepository.save(approvalLine);

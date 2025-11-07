@@ -1,5 +1,6 @@
 package com.lina.dataportal.domain.dashboard;
 
+import com.lina.dataportal.domain.common.BaseAuditEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -8,70 +9,55 @@ import java.util.List;
 
 @Entity
 @Table(name = "dashboards")
-public class Dashboard {
+public class Dashboard extends BaseAuditEntity {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long id; // 예: 1
     
     @NotBlank
     @Column(nullable = false)
-    private String title;
+    private String title; // 예: "월별 매출 분석 대시보드"
     
     @Column(columnDefinition = "TEXT")
-    private String description;
+    private String description; // 예: "월별 매출 현황과 트렌드를 분석하는 대시보드입니다."
     
     @NotBlank
     @Column(nullable = false)
-    private String category;
+    private String category; // 예: "Sales", "Marketing", "Finance"
     
     @Enumerated(EnumType.STRING)
     @NotNull
     @Column(nullable = false)
-    private DashboardType type;
+    private DashboardType type; // 예: TEMPLATE, CUSTOM
     
     @Column(nullable = false)
-    private Double rating = 0.0;
+    private Double rating = 0.0; // 예: 4.5
     
     @Column(nullable = false)
-    private Integer downloads = 0;
+    private Integer downloads = 0; // 예: 127
     
     @Column(name = "tags")
-    private String tags; // 쉼표로 구분된 태그 문자열
+    private String tags; // 예: "sales,revenue,monthly,analytics" (쉼표로 구분된 태그 문자열)
     
-    private String image;
+    private String image; // 예: "/images/dashboards/sales-dashboard.png"
     
     @Column(columnDefinition = "TEXT")
-    private String config;
+    private String config; // 예: "{'charts': [{'type': 'line', 'data': 'sales_data'}]}"
     
     @Column(name = "dashboard_url")
-    private String dashboardUrl;
+    private String dashboardUrl; // 예: "https://databricks.com/sql/dashboards/abc123"
     
     @Column(name = "contains_sensitive_data", nullable = false)
-    private Boolean containsSensitiveData = false;
+    private Boolean containsSensitiveData = false; // 예: true (민감한 데이터 포함 여부)
     
     @Column(name = "created_by", nullable = false)
-    private String createdBy;
+    private String createdBy; // 예: "lee.analyst@company.com"
     
     @Column(name = "is_active", nullable = false)
-    private Boolean isActive = true;
+    private Boolean isActive = true; // 예: true (활성 상태)
     
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-    
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-    
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
-    }
-    
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
+
     
     // Constructors
     public Dashboard() {}
@@ -137,9 +123,4 @@ public class Dashboard {
     public Boolean getIsActive() { return isActive; }
     public void setIsActive(Boolean isActive) { this.isActive = isActive; }
     
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-    
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }

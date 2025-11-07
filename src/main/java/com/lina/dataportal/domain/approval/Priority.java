@@ -1,17 +1,27 @@
 package com.lina.dataportal.domain.approval;
 
+/**
+ * 승인 요청 우선순위
+ * DB에는 EnumType.STRING으로 저장되며, UI 라벨은 프론트엔드에서 매핑
+ */
 public enum Priority {
-    HIGH("high"),
-    MEDIUM("medium"),
-    LOW("low");
+    /**
+     * 긴급 (24시간 이내 처리)
+     */
+    URGENT,
     
-    private final String value;
+    /**
+     * 높음 (3일 이내 처리)
+     */
+    HIGH,
     
-    Priority(String value) {
-        this.value = value;
-    }
+    /**
+     * 보통 (1주일 이내 처리)
+     */
+    MEDIUM,
     
-    public String getValue() {
-        return value;
-    }
+    /**
+     * 낮음 (2주일 이내 처리)
+     */
+    LOW
 }

@@ -12,67 +12,67 @@ public class CallRecord {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long id; // 예: 1
     
     @NotBlank
     @Column(name = "call_id", nullable = false, unique = true)
-    private String callId;
+    private String callId; // 예: "CALL_20240115_001"
     
     @NotBlank
     @Column(name = "customer_id", nullable = false)
-    private String customerId;
+    private String customerId; // 예: "CUST_12345"
     
     @Column(name = "customer_name")
-    private String customerName;
+    private String customerName; // 예: "김고객"
     
     @Column(name = "customer_phone")
-    private String customerPhone;
+    private String customerPhone; // 예: "010-1234-5678"
     
     @NotBlank
     @Column(name = "agent_id", nullable = false)
-    private String agentId;
+    private String agentId; // 예: "AGENT_789"
     
     @Column(name = "agent_name")
-    private String agentName;
+    private String agentName; // 예: "박상담원"
     
     @Column(name = "agent_department")
-    private String agentDepartment;
+    private String agentDepartment; // 예: "고객서비스팀"
     
     @Enumerated(EnumType.STRING)
     @NotNull
     @Column(nullable = false)
-    private CustomerType customerType;
+    private CustomerType customerType; // 예: VIP, REGULAR, NEW
     
     @Enumerated(EnumType.STRING)
     @NotNull
     @Column(nullable = false)
-    private CallType callType;
+    private CallType callType; // 예: INQUIRY, COMPLAINT, SUPPORT
     
     @Column(name = "call_duration")
-    private Integer callDuration; // seconds
+    private Integer callDuration; // 예: 480 (8분, 초 단위)
     
     @Column(name = "audio_file_path")
-    private String audioFilePath;
+    private String audioFilePath; // 예: "/audio/2024/01/15/CALL_20240115_001.wav"
     
     @Column(name = "transcript", columnDefinition = "TEXT")
-    private String transcript;
+    private String transcript; // 예: "안녕하세요. 고객센터입니다. 무엇을 도와드릴까요?"
     
     @Enumerated(EnumType.STRING)
     @NotNull
     @Column(nullable = false)
-    private ProcessingStatus processingStatus = ProcessingStatus.PENDING;
+    private ProcessingStatus processingStatus = ProcessingStatus.PENDING; // 예: PENDING, PROCESSING, COMPLETED, FAILED
     
     @Column(name = "call_date", nullable = false)
-    private LocalDateTime callDate;
+    private LocalDateTime callDate; // 예: 2024-01-15T14:30:00
     
     @Column(name = "processed_at")
-    private LocalDateTime processedAt;
+    private LocalDateTime processedAt; // 예: 2024-01-15T14:35:00
     
     @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    private LocalDateTime createdAt; // 예: 2024-01-15T14:30:00
     
     @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    private LocalDateTime updatedAt; // 예: 2024-01-15T14:35:00
     
     @OneToMany(mappedBy = "callRecord", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<CallSegment> segments;

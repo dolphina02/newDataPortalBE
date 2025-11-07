@@ -5,12 +5,12 @@ import java.util.Map;
 
 public class DatabricksQueryResult {
     
-    private boolean success;
-    private String error;
-    private List<DatabricksColumn> columns;
-    private List<Map<String, Object>> results;
-    private int rowCount;
-    private long executionTime;
+    private boolean success; // 예: true (쿼리 실행 성공 여부)
+    private String error; // 예: "Table not found: sales.orders" (에러 메시지)
+    private List<DatabricksColumn> columns; // 예: [{"name": "customer_id", "type": "string"}, {"name": "order_date", "type": "date"}]
+    private List<Map<String, Object>> results; // 예: [{"customer_id": "CUST_001", "order_date": "2024-01-15"}]
+    private int rowCount; // 예: 1250 (결과 행 수)
+    private long executionTime; // 예: 2500 (실행 시간, 밀리초)
     
     // Constructors
     public DatabricksQueryResult() {}

@@ -12,49 +12,49 @@ public class ApiEndpoint {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long id; // 예: 1
     
     @NotBlank
     @Column(nullable = false)
-    private String name;
+    private String name; // 예: "고객 정보 조회 API"
     
     @Column(columnDefinition = "TEXT")
-    private String description;
+    private String description; // 예: "고객 ID를 통해 고객의 상세 정보를 조회하는 API입니다."
     
     @NotBlank
     @Column(nullable = false)
-    private String endpoint;
+    private String endpoint; // 예: "/api/v1/customers/{customerId}"
     
     @Enumerated(EnumType.STRING)
     @NotNull
     @Column(nullable = false)
-    private HttpMethod method;
+    private HttpMethod method; // 예: GET, POST, PUT, DELETE
     
     @Enumerated(EnumType.STRING)
     @NotNull
     @Column(nullable = false)
-    private ApiCategory category;
+    private ApiCategory category; // 예: CUSTOMER, ORDER, PRODUCT, ANALYTICS
     
     @Column(columnDefinition = "TEXT")
-    private String requestSchema;
+    private String requestSchema; // 예: "{'customerId': 'string', 'includeOrders': 'boolean'}"
     
     @Column(columnDefinition = "TEXT")
-    private String responseSchema;
+    private String responseSchema; // 예: "{'id': 'string', 'name': 'string', 'email': 'string'}"
     
     @ElementCollection
     @CollectionTable(name = "api_tags", joinColumns = @JoinColumn(name = "api_id"))
     @Column(name = "tag")
-    private List<String> tags;
+    private List<String> tags; // 예: ["customer", "read", "v1"]
     
-    private String documentationUrl;
+    private String documentationUrl; // 예: "https://docs.company.com/api/customers"
     
-    private Boolean isActive = true;
+    private Boolean isActive = true; // 예: true (API 활성 상태)
     
     @Column(name = "created_at")
-    private LocalDateTime createdAt;
+    private LocalDateTime createdAt; // 예: 2024-01-15T10:00:00
     
     @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    private LocalDateTime updatedAt; // 예: 2024-01-20T14:30:00
     
     @PrePersist
     protected void onCreate() {

@@ -1,5 +1,27 @@
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                -- LINA Data Portal Database Schema
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                -- LINA Data Portal Database Schema (Updated with User References)
 -- PostgreSQL DDL Statements
+
+-- ============================================
+-- 0. USERS TABLE (NEW - 사용자 정보 정규화)
+-- ============================================
+CREATE TABLE users (
+    id BIGSERIAL PRIMARY KEY,
+    entra_object_id VARCHAR(100) UNIQUE,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    name VARCHAR(100) NOT NULL,
+    display_name VARCHAR(100),
+    employee_id VARCHAR(50),
+    department VARCHAR(100),
+    job_title VARCHAR(100),
+    manager_email VARCHAR(255),
+    phone_number VARCHAR(20),
+    office_location VARCHAR(100),
+    status VARCHAR(50) NOT NULL DEFAULT 'ACTIVE' CHECK (status IN ('ACTIVE', 'INACTIVE', 'SUSPENDED')),
+    is_admin BOOLEAN NOT NULL DEFAULT FALSE,
+    version BIGINT NOT NULL DEFAULT 0,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
 -- ============================================
 -- 1. DASHBOARDS TABLE
@@ -16,10 +38,17 @@ CREATE TABLE dashboards (
     config TEXT,
     dashboard_url VARCHAR(1000),
     contains_sensitive_data BOOLEAN NOT NULL DEFAULT FALSE,
-    created_by VARCHAR(255) NOT NULL,
+    
+    -- User reference (정규화)
+    created_by_id BIGINT,
+    created_by_email VARCHAR(255) NOT NULL, -- 보조 정보 (빠른 조회용)
+    created_by_name VARCHAR(255), -- 보조 정보
+    
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (created_by_id) REFERENCES users(id)
 );
 
 -- Dashboard Tags (Many-to-Many relationship)
@@ -33,13 +62,19 @@ CREATE TABLE dashboard_tags (
 -- Dashboard Subscriptions (User's My Dashboard)
 CREATE TABLE dashboard_subscriptions (
     id BIGSERIAL PRIMARY KEY,
-    user_id VARCHAR(255) NOT NULL,
+    
+    -- User reference (정규화)
+    user_id BIGINT NOT NULL,
+    user_email VARCHAR(255) NOT NULL, -- 보조 정보
+    
     dashboard_id BIGINT NOT NULL,
     display_order INTEGER DEFAULT 0,
     is_favorite BOOLEAN DEFAULT FALSE,
     custom_title VARCHAR(255),
     subscribed_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     last_accessed TIMESTAMP,
+    
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (dashboard_id) REFERENCES dashboards(id) ON DELETE CASCADE,
     UNIQUE(user_id, dashboard_id)
 );
@@ -49,18 +84,60 @@ CREATE TABLE dashboard_subscriptions (
 -- ============================================
 CREATE TABLE approvals (
     id BIGSERIAL PRIMARY KEY,
-    type VARCHAR(50) NOT NULL CHECK (type IN ('DEPLOY', 'DASHBOARD', 'DATA')),
+    type VARCHAR(50) NOT NULL CHECK (type IN ('DASHBOARD_DEPLOY', 'DASHBOARD_CREATE', 'DASHBOARD', 'DATA', 'DATA_ACCESS', 'REPORT_PUBLISH')),
     title VARCHAR(255) NOT NULL,
     description TEXT,
     status VARCHAR(50) NOT NULL DEFAULT 'PENDING' CHECK (status IN ('PENDING', 'APPROVED', 'REJECTED')),
-    priority VARCHAR(50) NOT NULL DEFAULT 'MEDIUM' CHECK (priority IN ('HIGH', 'MEDIUM', 'LOW')),
-    requester VARCHAR(255) NOT NULL,
-    reviewer VARCHAR(255),
+    priority VARCHAR(50) NOT NULL DEFAULT 'MEDIUM' CHECK (priority IN ('URGENT', 'HIGH', 'MEDIUM', 'LOW')),
+    
+    -- 요청자 정보 (정규화)
+    requester_id BIGINT NOT NULL,
+    requester_email VARCHAR(255) NOT NULL, -- 보조 정보 (빠른 조회용)
+    requester_name VARCHAR(255) NOT NULL, -- 보조 정보
+    
+    -- 검토자 정보 (정규화) - 선택적
+    reviewer_id BIGINT,
+    reviewer_email VARCHAR(255), -- 보조 정보
+    reviewer_name VARCHAR(255), -- 보조 정보
+    
+    -- 승인 대상 오브젝트 정보 (1급 개념)
+    target_type VARCHAR(50) NOT NULL CHECK (target_type IN ('DATASET', 'VIEW', 'TABLE', 'DASHBOARD', 'REPORT', 'NOTEBOOK', 'CLUSTER', 'WORKSPACE', 'POLICY', 'ROLE', 'API', 'SERVICE', 'MODEL', 'PIPELINE', 'FILE', 'FOLDER', 'OTHER')),
+    target_id VARCHAR(255) NOT NULL,
+    target_name VARCHAR(255),
+    target_description TEXT,
+    
+    -- 접근 범위 및 민감도
+    access_scope VARCHAR(50) NOT NULL CHECK (access_scope IN ('READ', 'WRITE', 'DELETE', 'EXECUTE', 'DEPLOY', 'SHARE', 'EXPORT', 'DOWNLOAD', 'ADMIN', 'OWNER', 'VIEW_ONLY', 'MASKED_READ', 'TEMPORARY_READ', 'TEMPORARY_WRITE')),
+    sensitivity_level VARCHAR(50) NOT NULL CHECK (sensitivity_level IN ('PUBLIC', 'INTERNAL', 'NORMAL', 'SENSITIVE', 'CONFIDENTIAL', 'RESTRICTED', 'PII', 'PHI', 'FINANCIAL', 'REGULATORY')),
+    
+    -- 보안 정책 연결
+    masking_policy_id BIGINT,
+    policy_set_id BIGINT,
+    
+    -- 추가 보안 설정
+    requires_masking BOOLEAN DEFAULT FALSE,
+    requires_audit_log BOOLEAN DEFAULT FALSE,
+    
+    -- 사용 기간 관리 (기본 3개월)
+    usage_duration_days INTEGER DEFAULT 90,
+    usage_expires_at TIMESTAMP,
+    
+    -- 업무 정당성 및 목적
+    business_justification TEXT,
+    data_usage_purpose TEXT,
+    expected_completion_date TIMESTAMP,
+    
     request_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     review_date TIMESTAMP,
     review_comment TEXT,
-    current_step INTEGER NOT NULL DEFAULT 1,
-    total_steps INTEGER NOT NULL DEFAULT 3
+    
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (requester_id) REFERENCES users(id),
+    FOREIGN KEY (reviewer_id) REFERENCES users(id),
+    FOREIGN KEY (masking_policy_id) REFERENCES masking_policies(id),
+    FOREIGN KEY (policy_set_id) REFERENCES policy_sets(id)
 );
 
 -- ============================================
@@ -76,10 +153,17 @@ CREATE TABLE reports (
     file_name VARCHAR(255),
     file_size BIGINT,
     contains_sensitive_data BOOLEAN NOT NULL DEFAULT FALSE,
-    created_by VARCHAR(255) NOT NULL,
+    
+    -- User reference (정규화)
+    created_by_id BIGINT,
+    created_by_email VARCHAR(255) NOT NULL, -- 보조 정보
+    created_by_name VARCHAR(255), -- 보조 정보
+    
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (created_by_id) REFERENCES users(id)
 );
 
 -- Report Tags
@@ -137,10 +221,17 @@ CREATE TABLE ml_models (
     f1_score DOUBLE PRECISION,
     response_time BIGINT,
     model_path VARCHAR(500),
-    created_by VARCHAR(255),
+    
+    -- User reference (정규화)
+    created_by_id BIGINT,
+    created_by_email VARCHAR(255), -- 보조 정보
+    created_by_name VARCHAR(255), -- 보조 정보
+    
     deployed_at TIMESTAMP,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (created_by_id) REFERENCES users(id)
 );
 
 -- Model Feature Importance (Key-Value pairs)
@@ -240,21 +331,108 @@ CREATE TABLE keyword_matches (
 );
 
 -- ============================================
--- 8. APPROVAL LINES TABLE
+-- 8. SECURITY POLICIES TABLES (NEW - 보안 정책 관리)
 -- ============================================
-CREATE TABLE approval_lines (
+
+-- Masking Policies Table
+CREATE TABLE masking_policies (
+    id BIGSERIAL PRIMARY KEY,
+    policy_name VARCHAR(255) NOT NULL UNIQUE,
+    display_name VARCHAR(255) NOT NULL,
+    description TEXT,
+    masking_type VARCHAR(50) NOT NULL CHECK (masking_type IN ('PARTIAL', 'FULL', 'HASH', 'ENCRYPT', 'TOKENIZE', 'REDACT')),
+    mask_pattern VARCHAR(255),
+    mask_character VARCHAR(10) DEFAULT '*',
+    preserve_length BOOLEAN DEFAULT TRUE,
+    preserve_format BOOLEAN DEFAULT FALSE,
+    applicable_columns TEXT,
+    exclusion_rules TEXT,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    version BIGINT NOT NULL DEFAULT 0,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Policy Sets Table
+CREATE TABLE policy_sets (
+    id BIGSERIAL PRIMARY KEY,
+    policy_set_name VARCHAR(255) NOT NULL UNIQUE,
+    display_name VARCHAR(255) NOT NULL,
+    description TEXT,
+    category VARCHAR(50) NOT NULL CHECK (category IN ('DATA_PROTECTION', 'ACCESS_CONTROL', 'COMPLIANCE', 'PRIVACY', 'SECURITY', 'AUDIT')),
+    severity VARCHAR(50) NOT NULL CHECK (severity IN ('LOW', 'MEDIUM', 'HIGH', 'CRITICAL')),
+    masking_policy_ids TEXT,
+    access_control_rules TEXT,
+    audit_requirements TEXT,
+    retention_policy TEXT,
+    encryption_requirements TEXT,
+    applicable_target_types TEXT,
+    applicable_sensitivity_levels TEXT,
+    required_approvals INTEGER DEFAULT 1,
+    approval_timeout_hours INTEGER DEFAULT 72,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    is_default BOOLEAN NOT NULL DEFAULT FALSE,
+    version BIGINT NOT NULL DEFAULT 0,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ============================================
+-- 9. APPROVAL LINE TEMPLATES TABLE (NEW - 승인 라인 템플릿)
+-- ============================================
+CREATE TABLE approval_line_templates (
+    id BIGSERIAL PRIMARY KEY,
+    approval_type VARCHAR(50) NOT NULL CHECK (approval_type IN ('DASHBOARD_DEPLOY', 'DASHBOARD_CREATE', 'DASHBOARD', 'DATA', 'DATA_ACCESS', 'REPORT_PUBLISH')),
+    step_order INTEGER NOT NULL,
+    approver_role VARCHAR(255) NOT NULL,
+    approver_department VARCHAR(255),
+    
+    -- 승인자 정보 (정규화) - 선택적 (역할/부서만으로도 템플릿 생성 가능)
+    approver_id BIGINT,
+    approver_email VARCHAR(255), -- 보조 정보
+    approver_name VARCHAR(255), -- 보조 정보
+    
+    is_required BOOLEAN NOT NULL DEFAULT TRUE,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    description TEXT,
+    version BIGINT NOT NULL DEFAULT 0,
+    
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (approver_id) REFERENCES users(id)
+);
+
+-- ============================================
+-- 9. APPROVAL STEPS TABLE (NEW - 실제 승인 진행 단계)
+-- ============================================
+CREATE TABLE approval_steps (
     id BIGSERIAL PRIMARY KEY,
     approval_id BIGINT NOT NULL,
+    template_id BIGINT NOT NULL,
+    template_version BIGINT NOT NULL,
     step_order INTEGER NOT NULL,
-    approver_id VARCHAR(255) NOT NULL,
-    approver_name VARCHAR(255) NOT NULL,
+    
+    -- 승인자 정보 (정규화)
+    approver_id BIGINT NOT NULL,
+    approver_email VARCHAR(255) NOT NULL, -- 보조 정보 (빠른 조회용)
+    approver_name VARCHAR(255) NOT NULL, -- 보조 정보
+    
     approver_role VARCHAR(255),
     approver_department VARCHAR(255),
+    is_required BOOLEAN NOT NULL DEFAULT TRUE,
+    description TEXT,
+    
     status VARCHAR(50) NOT NULL DEFAULT 'PENDING' CHECK (status IN ('PENDING', 'APPROVED', 'REJECTED', 'SKIPPED')),
     approved_at TIMESTAMP,
     approval_comment TEXT,
+    version BIGINT NOT NULL DEFAULT 0,
+    
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
     FOREIGN KEY (approval_id) REFERENCES approvals(id) ON DELETE CASCADE,
+    FOREIGN KEY (approver_id) REFERENCES users(id),
     UNIQUE(approval_id, step_order)
 );
 
@@ -262,12 +440,23 @@ CREATE TABLE approval_lines (
 -- INDEXES FOR PERFORMANCE
 -- ============================================
 
+-- User indexes
+CREATE INDEX idx_user_email ON users(email);
+CREATE INDEX idx_user_entra_id ON users(entra_object_id);
+CREATE INDEX idx_user_employee_id ON users(employee_id);
+CREATE INDEX idx_user_department ON users(department);
+CREATE INDEX idx_user_status ON users(status);
+
 -- Dashboard indexes
 CREATE INDEX idx_dashboards_type ON dashboards(type);
 CREATE INDEX idx_dashboards_category ON dashboards(category);
 CREATE INDEX idx_dashboards_rating ON dashboards(rating DESC);
 CREATE INDEX idx_dashboards_downloads ON dashboards(downloads DESC);
 CREATE INDEX idx_dashboards_created_at ON dashboards(created_at DESC);
+CREATE INDEX idx_dashboards_created_by ON dashboards(created_by_id);
+CREATE INDEX idx_dashboards_created_by_email ON dashboards(created_by_email);
+CREATE INDEX idx_dashboards_sensitive ON dashboards(contains_sensitive_data);
+CREATE INDEX idx_dashboards_active ON dashboards(is_active);
 
 -- Dashboard Subscription indexes
 CREATE INDEX idx_dashboard_subscriptions_user_id ON dashboard_subscriptions(user_id);
@@ -277,16 +466,44 @@ CREATE INDEX idx_dashboard_subscriptions_user_favorite ON dashboard_subscription
 CREATE INDEX idx_dashboard_subscriptions_last_accessed ON dashboard_subscriptions(user_id, last_accessed DESC);
 
 -- Approval indexes
-CREATE INDEX idx_approvals_status ON approvals(status);
-CREATE INDEX idx_approvals_type ON approvals(type);
-CREATE INDEX idx_approvals_requester ON approvals(requester);
-CREATE INDEX idx_approvals_priority ON approvals(priority);
-CREATE INDEX idx_approvals_request_date ON approvals(request_date DESC);
+CREATE INDEX idx_approval_requester ON approvals(requester_id);
+CREATE INDEX idx_approval_reviewer ON approvals(reviewer_id);
+CREATE INDEX idx_approval_status ON approvals(status);
+CREATE INDEX idx_approval_type ON approvals(type);
+CREATE INDEX idx_approval_priority ON approvals(priority);
+CREATE INDEX idx_approval_created ON approvals(created_at DESC);
+CREATE INDEX idx_approval_requester_email ON approvals(requester_email);
+CREATE INDEX idx_approval_reviewer_email ON approvals(reviewer_email);
+
+-- 승인 대상 오브젝트 관련 인덱스
+CREATE INDEX idx_approval_target ON approvals(target_type, target_id);
+CREATE INDEX idx_approval_target_type ON approvals(target_type);
+CREATE INDEX idx_approval_access_scope ON approvals(access_scope);
+CREATE INDEX idx_approval_sensitivity ON approvals(sensitivity_level);
+CREATE INDEX idx_approval_usage_expires ON approvals(usage_expires_at);
+CREATE INDEX idx_approval_masking_policy ON approvals(masking_policy_id);
+CREATE INDEX idx_approval_policy_set ON approvals(policy_set_id);
+CREATE INDEX idx_approval_high_risk ON approvals(sensitivity_level, access_scope) WHERE sensitivity_level IN ('SENSITIVE', 'CONFIDENTIAL', 'STRICT', 'PII', 'PHI', 'FINANCIAL');
+
+-- Security Policy indexes
+CREATE INDEX idx_masking_policies_name ON masking_policies(policy_name);
+CREATE INDEX idx_masking_policies_type ON masking_policies(masking_type);
+CREATE INDEX idx_masking_policies_active ON masking_policies(is_active);
+
+CREATE INDEX idx_policy_sets_name ON policy_sets(policy_set_name);
+CREATE INDEX idx_policy_sets_category ON policy_sets(category);
+CREATE INDEX idx_policy_sets_severity ON policy_sets(severity);
+CREATE INDEX idx_policy_sets_active ON policy_sets(is_active);
+CREATE INDEX idx_policy_sets_default ON policy_sets(is_default);
 
 -- Report indexes
 CREATE INDEX idx_reports_type ON reports(type);
 CREATE INDEX idx_reports_category ON reports(category);
 CREATE INDEX idx_reports_created_at ON reports(created_at DESC);
+CREATE INDEX idx_reports_created_by ON reports(created_by_id);
+CREATE INDEX idx_reports_created_by_email ON reports(created_by_email);
+CREATE INDEX idx_reports_sensitive ON reports(contains_sensitive_data);
+CREATE INDEX idx_reports_active ON reports(is_active);
 
 -- Data Table indexes
 CREATE INDEX idx_data_tables_data_type ON data_tables(data_type);
@@ -298,7 +515,8 @@ CREATE INDEX idx_data_tables_updated ON data_tables(last_updated DESC);
 -- ML Model indexes
 CREATE INDEX idx_ml_models_type ON ml_models(type);
 CREATE INDEX idx_ml_models_status ON ml_models(status);
-CREATE INDEX idx_ml_models_created_by ON ml_models(created_by);
+CREATE INDEX idx_ml_models_created_by ON ml_models(created_by_id);
+CREATE INDEX idx_ml_models_created_by_email ON ml_models(created_by_email);
 CREATE INDEX idx_ml_models_accuracy ON ml_models(accuracy DESC);
 CREATE INDEX idx_ml_models_created_at ON ml_models(created_at DESC);
 
@@ -307,15 +525,19 @@ CREATE INDEX idx_api_endpoints_category ON api_endpoints(category);
 CREATE INDEX idx_api_endpoints_method ON api_endpoints(method);
 CREATE INDEX idx_api_endpoints_active ON api_endpoints(is_active);
 
--- Dashboard additional indexes
-CREATE INDEX idx_dashboards_sensitive ON dashboards(contains_sensitive_data);
-CREATE INDEX idx_dashboards_created_by ON dashboards(created_by);
-CREATE INDEX idx_dashboards_active ON dashboards(is_active);
+-- Approval Line Template indexes
+CREATE INDEX idx_approval_line_templates_type ON approval_line_templates(approval_type);
+CREATE INDEX idx_approval_line_templates_step_order ON approval_line_templates(approval_type, step_order);
+CREATE INDEX idx_approval_line_templates_approver ON approval_line_templates(approver_id);
+CREATE INDEX idx_approval_line_templates_active ON approval_line_templates(is_active);
 
--- Report additional indexes
-CREATE INDEX idx_reports_sensitive ON reports(contains_sensitive_data);
-CREATE INDEX idx_reports_created_by ON reports(created_by);
-CREATE INDEX idx_reports_active ON reports(is_active);
+-- Approval Step indexes
+CREATE INDEX idx_approval_steps_approval_id ON approval_steps(approval_id);
+CREATE INDEX idx_approval_steps_approver_id ON approval_steps(approver_id);
+CREATE INDEX idx_approval_steps_status ON approval_steps(status);
+CREATE INDEX idx_approval_steps_step_order ON approval_steps(approval_id, step_order);
+CREATE INDEX idx_approval_steps_approver_email ON approval_steps(approver_email);
+CREATE INDEX idx_approval_steps_template ON approval_steps(template_id, template_version);
 
 -- STT indexes
 CREATE INDEX idx_call_records_call_id ON call_records(call_id);
@@ -335,11 +557,11 @@ CREATE INDEX idx_keyword_matches_category ON keyword_matches(category);
 CREATE INDEX idx_keyword_matches_speaker ON keyword_matches(speaker);
 CREATE INDEX idx_keyword_matches_created_at ON keyword_matches(created_at);
 
--- Approval Line indexes
-CREATE INDEX idx_approval_lines_approval_id ON approval_lines(approval_id);
-CREATE INDEX idx_approval_lines_approver_id ON approval_lines(approver_id);
-CREATE INDEX idx_approval_lines_status ON approval_lines(status);
-CREATE INDEX idx_approval_lines_step_order ON approval_lines(approval_id, step_order);
+-- User Token indexes
+CREATE INDEX idx_user_tokens_user_id ON user_tokens(user_id);
+CREATE INDEX idx_user_tokens_user_type ON user_tokens(user_id, token_type);
+CREATE INDEX idx_user_tokens_active ON user_tokens(is_active);
+CREATE INDEX idx_user_tokens_user_email ON user_tokens(user_email);
 
 -- ============================================
 -- TRIGGERS FOR UPDATED_AT COLUMNS
@@ -355,11 +577,18 @@ END;
 $$ language 'plpgsql';
 
 -- Apply triggers to tables with updated_at columns
+CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_dashboards_updated_at BEFORE UPDATE ON dashboards FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_approvals_updated_at BEFORE UPDATE ON approvals FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_approval_line_templates_updated_at BEFORE UPDATE ON approval_line_templates FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_approval_steps_updated_at BEFORE UPDATE ON approval_steps FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_masking_policies_updated_at BEFORE UPDATE ON masking_policies FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_policy_sets_updated_at BEFORE UPDATE ON policy_sets FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_reports_updated_at BEFORE UPDATE ON reports FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_ml_models_updated_at BEFORE UPDATE ON ml_models FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_api_endpoints_updated_at BEFORE UPDATE ON api_endpoints FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_call_records_updated_at BEFORE UPDATE ON call_records FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_user_tokens_updated_at BEFORE UPDATE ON user_tokens FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- Trigger for data_tables last_updated
 CREATE TRIGGER update_data_tables_last_updated BEFORE UPDATE ON data_tables FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -368,16 +597,21 @@ CREATE TRIGGER update_data_tables_last_updated BEFORE UPDATE ON data_tables FOR 
 -- COMMENTS FOR DOCUMENTATION
 -- ============================================
 
-COMMENT ON TABLE dashboards IS '대시보드 템플릿 및 사용자 정의 대시보드';
+COMMENT ON TABLE users IS '사용자 정보 (Entra ID 연동 또는 내부 사용자)';
+COMMENT ON TABLE dashboards IS '대시보드 템플릿 및 사용자 정의 대시보드 (User 참조키 사용)';
 COMMENT ON TABLE dashboard_tags IS '대시보드 태그 (다대다 관계)';
-COMMENT ON TABLE dashboard_subscriptions IS '사용자별 대시보드 구독 정보 (My Dashboard)';
-COMMENT ON TABLE approvals IS '승인 관리 시스템 (배포/구독/데이터 접근)';
-COMMENT ON TABLE reports IS 'PDF 리포트 및 분석 문서';
+COMMENT ON TABLE dashboard_subscriptions IS '사용자별 대시보드 구독 정보 (My Dashboard, User 참조키 사용)';
+COMMENT ON TABLE approvals IS '승인 관리 시스템 (승인 대상 오브젝트, 접근 범위, 민감도 레벨, 보안 정책 포함)';
+COMMENT ON TABLE masking_policies IS '데이터 마스킹 정책 (민감정보 보호를 위한 마스킹 규칙)';
+COMMENT ON TABLE policy_sets IS '보안 정책 세트 (여러 보안 정책을 묶어서 관리)';
+COMMENT ON TABLE approval_line_templates IS '승인 라인 템플릿 (승인 유형별 단계 정의)';
+COMMENT ON TABLE approval_steps IS '실제 승인 진행 단계 (템플릿 스냅샷 기반)';
+COMMENT ON TABLE reports IS 'PDF 리포트 및 분석 문서 (User 참조키 사용)';
 COMMENT ON TABLE report_tags IS '리포트 태그';
 COMMENT ON TABLE data_tables IS '데이터 카탈로그 - 테이블 메타데이터';
 COMMENT ON TABLE data_table_tags IS '데이터 테이블 태그';
 COMMENT ON TABLE data_table_columns IS '데이터 테이블 컬럼 정보';
-COMMENT ON TABLE ml_models IS '머신러닝 모델 관리';
+COMMENT ON TABLE ml_models IS '머신러닝 모델 관리 (User 참조키 사용)';
 COMMENT ON TABLE model_features IS '모델 특성 중요도';
 COMMENT ON TABLE model_tags IS '모델 태그';
 COMMENT ON TABLE api_endpoints IS 'API 엔드포인트 카탈로그';
@@ -385,7 +619,7 @@ COMMENT ON TABLE api_tags IS 'API 태그';
 COMMENT ON TABLE call_records IS 'STT 상담 녹취 기록';
 COMMENT ON TABLE call_segments IS 'STT 상담 세그먼트 (화자별 구간)';
 COMMENT ON TABLE keyword_matches IS 'STT 키워드 매칭 결과';
-COMMENT ON TABLE approval_lines IS '승인 라인 관리 (단계별 승인자 정보)';
+COMMENT ON TABLE user_tokens IS '사용자별 Personal Access Token 저장 (암호화, User 참조키 사용)';
 
 -- ============================================
 -- SAMPLE DATA VERIFICATION QUERIES
@@ -402,9 +636,16 @@ COMMENT ON TABLE approval_lines IS '승인 라인 관리 (단계별 승인자 �
 -- ============================================
 -- 9. USER TOKENS TABLE
 -- ============================================
+-- ============================================
+-- 10. USER TOKENS TABLE (Updated with User references)
+-- ============================================
 CREATE TABLE user_tokens (
     id BIGSERIAL PRIMARY KEY,
-    user_id VARCHAR(255) NOT NULL,
+    
+    -- User reference (정규화)
+    user_id BIGINT NOT NULL,
+    user_email VARCHAR(255) NOT NULL, -- 보조 정보 (빠른 조회용)
+    
     token_type VARCHAR(50) NOT NULL,
     encrypted_token TEXT NOT NULL,
     workspace_url VARCHAR(500),
@@ -414,10 +655,8 @@ CREATE TABLE user_tokens (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP,
     last_used_at TIMESTAMP,
-    expires_at TIMESTAMP
+    expires_at TIMESTAMP,
+    
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
-CREATE INDEX idx_user_tokens_user_type ON user_tokens(user_id, token_type);
-CREATE INDEX idx_user_tokens_active ON user_tokens(is_active);
-
-COMMENT ON TABLE user_tokens IS '사용자별 Personal Access Token 저장 (암호화)';

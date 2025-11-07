@@ -5,6 +5,8 @@ LINA Data Portal의 백엔드 API 서버입니다. Spring Boot 기반으로 구�
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2.0-6DB33F?style=flat-square&logo=spring-boot)
 ![Java](https://img.shields.io/badge/Java-17-ED8B00?style=flat-square&logo=openjdk)
 ![Maven](https://img.shields.io/badge/Maven-3.9.0-C71A36?style=flat-square&logo=apache-maven)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-336791?style=flat-square&logo=postgresql)
+![Elasticsearch](https://img.shields.io/badge/Elasticsearch-8.0-005571?style=flat-square&logo=elasticsearch)
 
 ## 🎯 프로젝트 개요
 
@@ -24,26 +26,53 @@ LINA Data Portal의 백엔드 API 서버입니다. Spring Boot 기반으로 구�
 - 인기도 및 평점 관리
 - 설치 횟수 추적
 
-### ✅ 승인관리 시스템
-- 3단계 승인 워크플로우 (배포요청 → 검토 → 배포완료)
-- 우선순위별 승인 대기열 관리
-- 승인/거절 처리 및 의견 관리
-- 상신자별 요청 내역 추적
+### ✅ 승인관리 시스템 (Enhanced)
+- **다단계 승인 워크플로우**: 유연한 승인 라인 템플릿 시스템
+- **승인 대상 오브젝트**: 데이터셋, 대시보드, 리포트, 클러스터 등 다양한 리소스 지원
+- **사용 기간 관리**: 기본 3개월, 민감도별 차등 적용 (임시:1일, 민감정보:1개월)
+- **보안 정책 연동**: 마스킹 정책, 감사 로그, 접근 범위 제어
+- **사용자 참조 정규화**: User 엔티티 기반 정규화된 데이터 관리
 
-### 🔍 통합 검색
+### 🔍 통합 검색 & STT 분석
 - 키워드 기반 전체 리소스 검색
-- 카테고리별 검색 결과 분류
-- 검색 통계 제공
+- **STT 키워드 검색**: Elasticsearch 기반 음성 인식 데이터 분석
+- 보험업계 특화 키워드 분석 및 통계
+- 실시간 상담 품질 모니터링
+
+### 📊 Data Catalog & ML Model Management
+- 데이터 테이블 카탈로그 관리
+- ML 모델 생명주기 관리
+- API 엔드포인트 탐색 및 문서화
+- 리포트 관리 시스템
+
+### 🔐 보안 & 토큰 관리
+- Databricks 토큰 암호화 저장
+- 사용자별 토큰 관리
+- 보안 정책 및 마스킹 규칙
 
 ## 🛠️ 기술 스택
 
+### Core Framework
 - **Framework**: Spring Boot 3.2.0
 - **Language**: Java 17
 - **Build Tool**: Maven
-- **Database**: H2 (개발), PostgreSQL (프로덕션)
 - **ORM**: Spring Data JPA
 - **Security**: Spring Security
-- **Documentation**: 향후 Swagger/OpenAPI 추가 예정
+
+### Database & Search
+- **Database**: H2 (개발), PostgreSQL (프로덕션)
+- **Search Engine**: Elasticsearch 8.0 (STT 데이터 분석)
+- **Connection Pool**: HikariCP
+
+### External Integrations
+- **Databricks**: REST API 연동 (쿼리 실행, 클러스터 관리)
+- **Text-to-SQL**: AI 기반 자연어 쿼리 변환
+- **Token Encryption**: AES-256 암호화
+
+### Documentation & Monitoring
+- **API Documentation**: Swagger/OpenAPI 3.0
+- **Logging**: SLF4J + Logback
+- **Health Check**: Spring Boot Actuator
 
 ## 🚀 시작하기
 
@@ -80,6 +109,23 @@ java -jar target/data-portal-backend-1.0.0.jar
 #### Neon PostgreSQL 개발 환경
 - **Database**: Neon PostgreSQL (클라우드)
 - **Connection**: 자동 연결 (설정 완료)
+
+## 📚 상세 문서
+
+### 📋 시스템 개요
+- **[전체 시스템 개요](docs/SYSTEM_OVERVIEW.md)** - 아키텍처, 기술 스택, 로드맵 전체 가이드
+
+### 시스템별 상세 가이드
+- **[승인관리 시스템](docs/APPROVAL_SYSTEM.md)** - 다단계 승인 워크플로우, 사용 기간 관리, 보안 정책 연동
+- **[STT 키워드 검색 시스템](docs/STT_SEARCH_SYSTEM.md)** - Elasticsearch 기반 음성 인식 데이터 분석
+- **[데이터 카탈로그 시스템](docs/DATA_CATALOG_SYSTEM.md)** - 메타데이터 관리, 데이터 품질, 계보 추적
+- **[Databricks 통합 시스템](docs/DATABRICKS_INTEGRATION.md)** - 쿼리 실행, 토큰 보안, Text-to-SQL
+
+### 기술 문서
+- **[보안 가이드](SECURITY.md)** - 보안 정책, 인증/인가, 데이터 보호
+- **[민감도 레벨 시스템](docs/SENSITIVITY_LEVEL_ENHANCEMENT.md)** - 2단계 민감도 분류 체계
+- **[데이터베이스 마이그레이션](DATABASE_MIGRATION_GUIDE.md)** - 스키마 변경, 데이터 이관
+- **[사용 기간 관리](USAGE_DURATION_SIMPLE_SUMMARY.md)** - 승인 사용 기간 정책
 
 ## 📁 프로젝트 구조
 
@@ -346,10 +392,10 @@ java -jar -Dspring.profiles.active=prod target/data-portal-backend-1.0.0.jar
 
 ## 🔄 향후 개발 계획
 
-### Phase 2 - 고급 분석 도구
-- SQL Editor API (쿼리 실행 및 결과 관리)
-- Text-to-SQL API (AI 기반 자연어 쿼리 변환)
-- STT 키워드 검색 API (음성 인식 및 분석)
+### Phase 2 - 고급 분석 도구 ✅
+- ✅ SQL Editor API (쿼리 실행 및 결과 관리)
+- ✅ Text-to-SQL API (AI 기반 자연어 쿼리 변환)
+- ✅ STT 키워드 검색 API (음성 인식 및 분석)
 
 ### Phase 3 - Producer360 통합 인사이트
 - KPI 대시보드 API
@@ -359,12 +405,18 @@ java -jar -Dspring.profiles.active=prod target/data-portal-backend-1.0.0.jar
 
 ### Phase 4 - 고급 기능
 - JWT 기반 인증/인가
-- API 문서화 (Swagger/OpenAPI)
+- ✅ API 문서화 (Swagger/OpenAPI)
 - 로깅 및 모니터링 (ELK Stack)
 - 캐싱 (Redis)
 - 메시지 큐 (RabbitMQ)
 - 파일 업로드/다운로드 (AWS S3)
 - 실시간 알림 (WebSocket)
+
+### Phase 5 - AI/ML 고도화
+- 지능형 승인 추천 시스템
+- 자동 데이터 품질 모니터링
+- 예측 분석 기반 리소스 관리
+- 자연어 기반 데이터 탐색
 
 ## 🤝 기여하기
 

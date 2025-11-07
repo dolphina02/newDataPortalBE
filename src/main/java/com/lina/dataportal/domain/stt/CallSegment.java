@@ -9,34 +9,34 @@ public class CallSegment {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long id; // 예: 1
     
     @NotNull
     @Column(name = "call_record_id", nullable = false)
-    private Long callRecordId;
+    private Long callRecordId; // 예: 1 (CallRecord의 ID)
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "call_record_id", insertable = false, updatable = false)
-    private CallRecord callRecord;
+    private CallRecord callRecord; // 연관된 통화 기록
     
     @NotNull
     @Column(name = "start_time", nullable = false)
-    private Integer startTime; // seconds
+    private Integer startTime; // 예: 0 (시작 시간, 초 단위)
     
     @NotNull
     @Column(name = "end_time", nullable = false)
-    private Integer endTime; // seconds
+    private Integer endTime; // 예: 15 (종료 시간, 초 단위)
     
     @Enumerated(EnumType.STRING)
     @NotNull
     @Column(nullable = false)
-    private Speaker speaker;
+    private Speaker speaker; // 예: AGENT, CUSTOMER
     
     @Column(columnDefinition = "TEXT")
-    private String text;
+    private String text; // 예: "안녕하세요. 고객센터입니다. 무엇을 도와드릴까요?"
     
     @Column(name = "confidence_score")
-    private Double confidenceScore;
+    private Double confidenceScore; // 예: 0.95 (음성 인식 신뢰도)
     
     // Constructors
     public CallSegment() {}

@@ -2,10 +2,10 @@ package com.lina.dataportal.domain.databricks;
 
 public class DatabricksColumn {
     
-    private String name;
-    private String type;
-    private String comment;
-    private boolean nullable;
+    private String name; // 예: "customer_id"
+    private String type; // 예: "string", "int", "double", "timestamp"
+    private String comment; // 예: "고객 고유 식별자"
+    private boolean nullable; // 예: true (NULL 값 허용 여부)
     
     // Constructors
     public DatabricksColumn() {}

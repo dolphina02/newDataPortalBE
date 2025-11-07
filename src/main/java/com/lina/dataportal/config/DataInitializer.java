@@ -6,7 +6,9 @@ import com.lina.dataportal.domain.api.HttpMethod;
 import com.lina.dataportal.domain.approval.Approval;
 import com.lina.dataportal.domain.approval.ApprovalLine;
 import com.lina.dataportal.domain.approval.ApprovalLineStatus;
+import com.lina.dataportal.domain.approval.ApprovalLineTemplate;
 import com.lina.dataportal.domain.approval.ApprovalType;
+import com.lina.dataportal.domain.approval.TargetType;
 import com.lina.dataportal.domain.approval.Priority;
 import com.lina.dataportal.domain.catalog.DataTable;
 import com.lina.dataportal.domain.catalog.DataType;
@@ -18,9 +20,12 @@ import com.lina.dataportal.domain.model.ModelStatus;
 import com.lina.dataportal.domain.model.ModelType;
 import com.lina.dataportal.domain.report.Report;
 import com.lina.dataportal.domain.report.ReportType;
+import com.lina.dataportal.domain.user.User;
+import com.lina.dataportal.domain.user.UserStatus;
 
 import com.lina.dataportal.repository.*;
 import com.lina.dataportal.repository.ApprovalLineRepository;
+import com.lina.dataportal.repository.ApprovalLineTemplateRepository;
 import com.lina.dataportal.repository.DashboardSubscriptionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -37,32 +42,39 @@ public class DataInitializer implements CommandLineRunner {
     private final DashboardSubscriptionRepository dashboardSubscriptionRepository;
     private final ApprovalRepository approvalRepository;
     private final ApprovalLineRepository approvalLineRepository;
+    private final ApprovalLineTemplateRepository approvalLineTemplateRepository;
     private final ReportRepository reportRepository;
     private final DataTableRepository dataTableRepository;
     private final MLModelRepository mlModelRepository;
     private final ApiEndpointRepository apiEndpointRepository;
+    private final UserRepository userRepository;
     
     @Autowired
     public DataInitializer(DashboardRepository dashboardRepository,
                           DashboardSubscriptionRepository dashboardSubscriptionRepository,
                           ApprovalRepository approvalRepository,
                           ApprovalLineRepository approvalLineRepository,
+                          ApprovalLineTemplateRepository approvalLineTemplateRepository,
                           ReportRepository reportRepository,
                           DataTableRepository dataTableRepository,
                           MLModelRepository mlModelRepository,
-                          ApiEndpointRepository apiEndpointRepository) {
+                          ApiEndpointRepository apiEndpointRepository,
+                          UserRepository userRepository) {
         this.dashboardRepository = dashboardRepository;
         this.dashboardSubscriptionRepository = dashboardSubscriptionRepository;
         this.approvalRepository = approvalRepository;
         this.approvalLineRepository = approvalLineRepository;
+        this.approvalLineTemplateRepository = approvalLineTemplateRepository;
         this.reportRepository = reportRepository;
         this.dataTableRepository = dataTableRepository;
         this.mlModelRepository = mlModelRepository;
         this.apiEndpointRepository = apiEndpointRepository;
+        this.userRepository = userRepository;
     }
     
     @Override
     public void run(String... args) throws Exception {
+        initializeApprovalLineTemplates(); // 템플릿을 먼저 초기화
         initializeDashboards();
         initializeDashboardSubscriptions();
         initializeApprovals();
@@ -143,32 +155,40 @@ public class DataInitializer implements CommandLineRunner {
     
     private void initializeApprovals() {
         if (approvalRepository.count() == 0) {
-            // 대시보드 배포 요청
+            // 대시보드 배포 요청 (DEPLOY + DASHBOARD)
             Approval deployRequest = new Approval(
                 ApprovalType.DEPLOY,
                 "신규 고객 분석 대시보드 배포",
                 "Q4 신규 고객 획득 전략을 위한 분석 대시보드 프로덕션 배포 요청",
-                "김데이터"
+                1L, "kim.data@company.com", "김데이터"
             );
+            deployRequest.setTargetType(TargetType.DASHBOARD);
+            deployRequest.setTargetId("dashboard_001");
+            deployRequest.setTargetName("신규 고객 분석 대시보드");
             deployRequest.setPriority(Priority.HIGH);
-            deployRequest.setCurrentStep(2);
             
-            // 민감정보 대시보드 구독 요청
+            // 민감정보 대시보드 구독 요청 (SUBSCRIBE + DASHBOARD)
             Approval subscribeRequest = new Approval(
-                ApprovalType.DASHBOARD,
+                ApprovalType.SUBSCRIBE,
                 "개인정보 포함 고객 세그먼트 대시보드 구독",
                 "마케팅 캠페인을 위한 고객 개인정보가 포함된 세그먼트 분석 대시보드 접근 권한 요청",
-                "이마케팅"
+                2L, "lee.marketing@company.com", "이마케팅"
             );
+            subscribeRequest.setTargetType(TargetType.DASHBOARD);
+            subscribeRequest.setTargetId("dashboard_002");
+            subscribeRequest.setTargetName("고객 세그먼트 대시보드");
             subscribeRequest.setPriority(Priority.MEDIUM);
             
-            // 데이터 접근 권한 요청
+            // 데이터 접근 권한 요청 (ACCESS + DATASET)
             Approval dataAccessRequest = new Approval(
-                ApprovalType.DATA,
+                ApprovalType.ACCESS,
                 "보험금 청구 상세 데이터 접근 권한",
                 "사기 탐지 모델 개발을 위한 과거 5년간 보험금 청구 상세 데이터 접근 권한 요청",
-                "박분석"
+                3L, "park.analysis@company.com", "박분석"
             );
+            dataAccessRequest.setTargetType(TargetType.DATASET);
+            dataAccessRequest.setTargetId("claims_dataset_001");
+            dataAccessRequest.setTargetName("보험금 청구 데이터셋");
             dataAccessRequest.setPriority(Priority.LOW);
             
             approvalRepository.saveAll(Arrays.asList(
@@ -446,39 +466,39 @@ public class DataInitializer implements CommandLineRunner {
     private void initializeApprovalLines() {
         if (approvalLineRepository.count() == 0) {
             // 첫 번째 승인 요청 (ID: 1) - 대시보드 배포 요청
-            ApprovalLine line1_1 = new ApprovalLine(1L, 1, "team_leader_data", "김팀장");
+            ApprovalLine line1_1 = new ApprovalLine(1L, 1L, 1, "team_leader_data", "김팀장");
             line1_1.setApproverRole("팀장");
             line1_1.setApproverDepartment("데이터분석팀");
             line1_1.setStatus(ApprovalLineStatus.APPROVED);
             line1_1.setApprovalComment("검토 완료. 승인합니다.");
             
-            ApprovalLine line1_2 = new ApprovalLine(1L, 2, "dept_manager_it", "박부장");
+            ApprovalLine line1_2 = new ApprovalLine(1L, 1L, 2, "dept_manager_it", "박부장");
             line1_2.setApproverRole("부서장");
             line1_2.setApproverDepartment("IT본부");
             
-            ApprovalLine line1_3 = new ApprovalLine(1L, 3, "cto", "최CTO");
+            ApprovalLine line1_3 = new ApprovalLine(1L, 1L, 3, "cto", "최CTO");
             line1_3.setApproverRole("최고기술책임자");
             line1_3.setApproverDepartment("IT본부");
             
             // 두 번째 승인 요청 (ID: 2) - 민감정보 대시보드 구독
-            ApprovalLine line2_1 = new ApprovalLine(2L, 1, "team_leader_marketing", "이팀장");
+            ApprovalLine line2_1 = new ApprovalLine(2L, 2L, 1, "team_leader_marketing", "이팀장");
             line2_1.setApproverRole("팀장");
             line2_1.setApproverDepartment("마케팅팀");
             
-            ApprovalLine line2_2 = new ApprovalLine(2L, 2, "dept_manager_business", "정부장");
+            ApprovalLine line2_2 = new ApprovalLine(2L, 2L, 2, "dept_manager_business", "정부장");
             line2_2.setApproverRole("부서장");
             line2_2.setApproverDepartment("영업본부");
             
-            ApprovalLine line2_3 = new ApprovalLine(2L, 3, "privacy_officer", "한개인정보보호책임자");
+            ApprovalLine line2_3 = new ApprovalLine(2L, 2L, 3, "privacy_officer", "한개인정보보호책임자");
             line2_3.setApproverRole("개인정보보호책임자");
             line2_3.setApproverDepartment("컴플라이언스팀");
             
             // 세 번째 승인 요청 (ID: 3) - 데이터 접근 권한
-            ApprovalLine line3_1 = new ApprovalLine(3L, 1, "team_leader_analysis", "박팀장");
+            ApprovalLine line3_1 = new ApprovalLine(3L, 3L, 1, "team_leader_analysis", "박팀장");
             line3_1.setApproverRole("팀장");
             line3_1.setApproverDepartment("분석팀");
             
-            ApprovalLine line3_2 = new ApprovalLine(3L, 2, "dept_manager_it", "박부장");
+            ApprovalLine line3_2 = new ApprovalLine(3L, 3L, 2, "dept_manager_it", "박부장");
             line3_2.setApproverRole("부서장");
             line3_2.setApproverDepartment("IT본부");
             
@@ -488,4 +508,47 @@ public class DataInitializer implements CommandLineRunner {
                 line3_1, line3_2
             ));
         }
-    }}
+    }
+    
+    private void initializeApprovalLineTemplates() {
+        if (approvalLineTemplateRepository.count() == 0) {
+            // ACCESS 타입의 승인 라인 템플릿 (데이터 접근)
+            ApprovalLineTemplate dataAccess1 = new ApprovalLineTemplate(ApprovalType.ACCESS, 1, "팀장", "데이터분석팀", 1L, "kim.leader@company.com", "김팀장");
+            dataAccess1.setDescription("데이터 접근 권한에 대한 팀장 승인");
+            dataAccess1.setIsRequired(true);
+            
+            ApprovalLineTemplate dataAccess2 = new ApprovalLineTemplate(ApprovalType.ACCESS, 2, "부장", "IT팀", 2L, "park.manager@company.com", "박부장");
+            dataAccess2.setDescription("데이터 접근 권한에 대한 IT 부장 승인");
+            dataAccess2.setIsRequired(true);
+            
+            ApprovalLineTemplate dataAccess3 = new ApprovalLineTemplate(ApprovalType.ACCESS, 3, "이사", "경영지원팀", 3L, "lee.director@company.com", "이이사");
+            dataAccess3.setDescription("민감 데이터 접근에 대한 최종 승인");
+            dataAccess3.setIsRequired(false);
+            
+            // DEPLOY 타입의 승인 라인 템플릿 (배포/발행)
+            ApprovalLineTemplate deployTemplate1 = new ApprovalLineTemplate(ApprovalType.DEPLOY, 1, "팀장", "데이터분석팀", 1L, "kim.leader@company.com", "김팀장");
+            deployTemplate1.setDescription("배포/발행에 대한 팀장 승인");
+            deployTemplate1.setIsRequired(true);
+            
+            ApprovalLineTemplate deployTemplate2 = new ApprovalLineTemplate(ApprovalType.DEPLOY, 2, "부장", "경영지원팀", 4L, "choi.manager@company.com", "최부장");
+            deployTemplate2.setDescription("배포/발행에 대한 경영지원 부장 승인");
+            deployTemplate2.setIsRequired(true);
+            
+            // CREATE 타입의 승인 라인 템플릿 (생성)
+            ApprovalLineTemplate createTemplate1 = new ApprovalLineTemplate(ApprovalType.CREATE, 1, "팀장", "데이터분석팀", 1L, "kim.leader@company.com", "김팀장");
+            createTemplate1.setDescription("리소스 생성에 대한 팀장 승인");
+            createTemplate1.setIsRequired(true);
+            
+            // SUBSCRIBE 타입의 승인 라인 템플릿 (구독)
+            ApprovalLineTemplate subscribeTemplate1 = new ApprovalLineTemplate(ApprovalType.SUBSCRIBE, 1, "팀장", "데이터분석팀", 1L, "kim.leader@company.com", "김팀장");
+            subscribeTemplate1.setDescription("구독 권한에 대한 팀장 승인");
+            subscribeTemplate1.setIsRequired(true);
+            
+            approvalLineTemplateRepository.saveAll(Arrays.asList(
+                dataAccess1, dataAccess2, dataAccess3,
+                deployTemplate1, deployTemplate2,
+                createTemplate1, subscribeTemplate1
+            ));
+        }
+    }
+}

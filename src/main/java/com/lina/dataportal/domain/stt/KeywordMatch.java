@@ -11,44 +11,44 @@ public class KeywordMatch {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long id; // 예: 1
     
     @NotNull
     @Column(name = "call_record_id", nullable = false)
-    private Long callRecordId;
+    private Long callRecordId; // 예: 1 (연관된 CallRecord의 ID)
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "call_record_id", insertable = false, updatable = false)
-    private CallRecord callRecord;
+    private CallRecord callRecord; // 연관된 통화 기록
     
     @NotBlank
     @Column(nullable = false)
-    private String keyword;
+    private String keyword; // 예: "불만", "환불", "감사합니다"
     
     @Enumerated(EnumType.STRING)
     @NotNull
     @Column(nullable = false)
-    private KeywordCategory category;
+    private KeywordCategory category; // 예: COMPLAINT, COMPLIMENT, INQUIRY, PRODUCT
     
     @NotNull
     @Column(name = "match_count", nullable = false)
-    private Integer matchCount = 1;
+    private Integer matchCount = 1; // 예: 3 (키워드 매칭 횟수)
     
     @Column(name = "first_occurrence_time")
-    private Integer firstOccurrenceTime; // seconds
+    private Integer firstOccurrenceTime; // 예: 120 (첫 번째 발생 시간, 초 단위)
     
     @Column(name = "context_text", columnDefinition = "TEXT")
-    private String contextText;
+    private String contextText; // 예: "제품에 대해 불만이 있어서 전화드렸습니다."
     
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Speaker speaker;
+    private Speaker speaker; // 예: CUSTOMER, AGENT
     
     @Column(name = "sentiment_score")
-    private Double sentimentScore;
+    private Double sentimentScore; // 예: -0.7 (감정 점수, -1.0~1.0)
     
     @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    private LocalDateTime createdAt; // 예: 2024-01-15T14:35:00
     
     @PrePersist
     protected void onCreate() {
